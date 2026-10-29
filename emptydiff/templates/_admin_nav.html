@@ -1,0 +1,11 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{# Sub-navigation of the administration #}
+<nav class="tabs" aria-label="{{ t('adm.nav') }}">
+  <a href="{{ url_for('admin_index') }}"{% if request.endpoint in ('admin_index', 'admin_lab_new', 'admin_course_new', 'admin_lab_edit', 'admin_course_clone', 'admin_lab_submissions') %} aria-current="page"{% endif %}>{{ t('adm.nav_labs') }}</a>
+  <a href="{{ url_for('admin_credit') }}"{% if request.endpoint == 'admin_credit' %} aria-current="page"{% endif %}>{{ t('adm.nav_credit') }}</a>
+  <a href="{{ url_for('admin_backup') }}"{% if request.endpoint and request.endpoint.startswith('admin_backup') %} aria-current="page"{% endif %}>{{ t('adm.nav_backup') }}</a>
+  <a href="{{ url_for('admin_help') }}"{% if request.endpoint == 'admin_help' %} aria-current="page"{% endif %}>{{ t('adm.nav_help') }}</a>
+</nav>

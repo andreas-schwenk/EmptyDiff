@@ -1,0 +1,35 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{% extends "base.html" %}
+{% block title %}{{ t('login.title') }} · EmptyDiff{% endblock %}
+{% block content %}
+<div class="auth">
+  <div class="card">
+    <div class="brand-mark">{% include "_brand_mark.html" %}</div>
+    <p class="purpose">{{ t('login.purpose') }}</p>
+    <h1>{{ t('login.title') }}</h1>
+    <p class="muted">{{ t('login.intro', domains=domains) }}</p>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field">
+        <label for="email">{{ t('login.email') }}</label>
+        <input id="email" type="email" name="email" placeholder="{{ email_hint }}" required autofocus autocomplete="email">
+        <small class="muted">{{ t('login.email_help') }}</small>
+      </div>
+      <div class="hp" aria-hidden="true">
+        <label>{{ t('login.hp_label') }} <input type="text" name="extra_url" tabindex="-1" autocomplete="off"></label>
+      </div>
+      <div class="consent">
+        <label class="check">
+          <input type="checkbox" name="remember" value="1">
+          <span><b>{{ t('login.remember_title') }}</b><br><small>{{ t('login.remember_text', days=remember_days) }}</small></span>
+        </label>
+      </div>
+      <button type="submit" class="btn-block">{{ t('login.request') }}</button>
+    </form>
+    <p class="muted cookie-note">{{ t('login.cookie_note_html', url=url_for('privacy')) }}</p>
+  </div>
+</div>
+{% endblock %}

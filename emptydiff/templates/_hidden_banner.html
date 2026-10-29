@@ -1,0 +1,10 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+{#- Notice for lecturers above a lab that is still hidden from students (include with `lab` and `is_admin`) -#}
+{% if is_admin and not lab.active %}
+<div class="preview-banner" role="note">
+  <span class="tag">{{ t('lab.hidden_tag') }}</span>
+  <span>{{ t('lab.hidden_html') }}</span>
+</div>
+{% endif %}

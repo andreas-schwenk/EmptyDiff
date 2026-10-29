@@ -1,0 +1,84 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+<!doctype html>
+<html lang="{{ lang|lower }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}EmptyDiff{% endblock %}</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#ff8a00">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg', v=icon_version) }}">
+  <link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="/favicon.ico?v={{ icon_version }}">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v={{ icon_version }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <a class="skip" href="#main">{{ t('nav.skip') }}</a>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="{{ url_for('index') }}"><span class="brand-mark">{% include "_brand_mark.html" %}</span>EmptyDiff</a>
+      {% if dev %}<span class="devbadge" title="{{ t('dev.badge_title') }}">DEV</span>{% endif %}
+      {% if user %}
+      <nav class="topnav" aria-label="{{ t('nav.main') }}">
+        <a href="{{ url_for('index') }}"{% if request.endpoint in ('index', 'lab', 'submission') and not nav_admin %} aria-current="page"{% endif %}>{{ t('nav.labs') }}</a>
+        {% if is_admin %}<a href="{{ url_for('admin_index') }}"{% if nav_admin or (request.endpoint and request.endpoint.startswith('admin_')) %} aria-current="page"{% endif %}>{{ t('nav.admin') }}</a>{% endif %}
+        <span class="who">{{ user }}</span>
+        <form method="post" action="{{ url_for('logout') }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-ghost btn-sm">{{ t('nav.logout') }}</button>
+        </form>
+      </nav>
+      {% endif %}
+    </div>
+  </header>
+
+  {% for m in sim_mails %}
+  <dialog data-autoshow open>
+    <div class="dialog-head">
+      <h2>{{ t('dev.mail_title') }}</h2>
+      <span class="devbadge">{{ t('dev.mail_note') }}</span>
+    </div>
+    <div class="dialog-body">
+      <dl class="facts">
+        <dt>{{ t('dev.mail_to') }}</dt><dd>{{ m.recipient }}</dd>
+        <dt>{{ t('dev.mail_subject') }}</dt><dd>{{ m.subject }}</dd>
+      </dl>
+      <pre>{{ m.body }}</pre>
+    </div>
+    <form method="dialog" class="dialog-foot"><button type="submit">{{ t('dev.close') }}</button></form>
+  </dialog>
+  {% endfor %}
+
+  <main id="main" tabindex="-1">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+      <p class="flash {{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">{{ message }}</p>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer">
+    <a href="https://github.com/andreas-schwenk/emptydiff" rel="noopener">EmptyDiff</a>
+    <span class="sep" aria-hidden="true">·</span>
+    {{ t('footer.license_html') }}
+    <span class="sep" aria-hidden="true">·</span>
+    {{ t('footer.by') }} <a href="https://arts-and-sciences.com" rel="noopener">arts-and-sciences.com</a>
+    <span class="sep" aria-hidden="true">·</span>
+    <a href="{{ url_for('privacy') }}">{{ t('footer.privacy') }}</a>
+    {% if imprint_url.startswith(('https://', 'http://', '/')) %}<span class="sep" aria-hidden="true">·</span>
+    <a href="{{ imprint_url }}">{{ t('footer.imprint') }}</a>{% endif %}
+    <span class="sep" aria-hidden="true">·</span>
+    <span class="langs" role="group" aria-label="{{ t('lang.label') }}">
+      {%- for code, name in languages %}{% if not loop.first %} / {% endif %}
+      <a href="{{ url_for('set_lang', code=code|lower, next=request.path if request.method == 'GET' else none) }}" lang="{{ code|lower }}" hreflang="{{ code|lower }}"{% if code == lang %} aria-current="true"{% endif %}>{{ name }}</a>
+      {%- endfor %}
+    </span>
+  </footer>
+  <div id="live" class="visually-hidden" role="status" aria-live="polite"></div>
+</body>
+</html>

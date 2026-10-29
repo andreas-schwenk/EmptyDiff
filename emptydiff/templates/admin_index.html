@@ -1,0 +1,103 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{% extends "base.html" %}
+{% block title %}{{ t('adm.title') }} · EmptyDiff{% endblock %}
+{% block content %}
+{% include "_admin_nav.html" %}
+{% set total = namespace(labs=0, active=0) %}
+{% for c in courses %}{% set total.labs = total.labs + c.labs|length %}{% set total.active = total.active + c.active %}{% endfor %}
+
+<div class="page-head">
+  <div>
+    <h1>{{ t('adm.labs_title') }}</h1>
+  </div>
+  <a class="btn" href="{{ url_for('admin_course_new') }}">{{ t('adm.new_course') }}</a>
+</div>
+
+{% if privacy_missing %}
+<p class="flash error" role="alert"><span>{{ t('adm.privacy_missing_html', missing=privacy_missing | join(', '), url=url_for('privacy')) }}</span></p>
+{% endif %}
+{% if due_soon %}
+<section class="retention-warning{{ ' urgent' if due_soon[0][1].urgent else '' }}" role="alert">
+  <div>
+    <b>{{ t('adm.retention_head', months=9) }}</b>
+    <ul class="retention-list">
+      {% for name, e in due_soon %}
+      <li>{{ t('adm.retention_item_html',
+               lab=link(url_for('admin_lab_submissions', name=name), name),
+               subs=tn('adm.n_submissions', e.submissions), date=e.delete_at | localdate,
+               days=tn('adm.in_days', e.days_left) if e.days_left >= 0 else '',
+               archive=link(url_for('admin_lab_archive', name=name), t('adm.download_archive'))) }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endif %}
+
+<p class="summary-line">{{ t('adm.active_summary_html', active=total.active, total=total.labs) }}</p>
+<p class="muted help-line">{{ t('adm.legend_html') }}</p>
+
+{% for c in courses %}
+<details class="course card" id="{{ c.course }}"{% if c.active or not c.labs or c.course == request.args.get('open') %} open{% endif %}>
+  <summary>
+    <span class="course-name">{{ c.course }}</span>
+    <span class="badge {{ 'ok' if c.active else '' }}">{{ t('adm.active_badge', n=c.active, total=c.labs|length) }}</span>
+    <span class="course-actions">
+      <a class="btn btn-ghost btn-sm" title="{{ t('adm.new_lab_title') }}" href="{{ url_for('admin_lab_new', course=c.course) }}">{{ t('adm.new_lab') }}</a>
+      <a class="btn btn-ghost btn-sm" title="{{ t('adm.credit_list_title') }}" href="{{ url_for('admin_credit', course=c.course) }}">{{ t('adm.credit_list') }}</a>
+      <a class="btn btn-ghost btn-sm" title="{{ t('adm.clone_title') }}" href="{{ url_for('admin_course_clone', course=c.course) }}">{{ t('adm.clone_course') }}</a>
+    </span>
+  </summary>
+  {% if not c.labs %}
+  <div class="course-empty">
+    <p class="muted">{{ t('adm.course_empty') }}</p>
+    <button type="button" class="btn btn-ghost btn-sm btn-danger-text" data-open-dialog="delete-course-{{ c.course }}">{{ t('adm.delete_course') }}</button>
+    <dialog id="delete-course-{{ c.course }}" aria-labelledby="delete-course-title-{{ c.course }}">
+      <div class="dialog-head"><h2 id="delete-course-title-{{ c.course }}">{{ t('adm.delete_course_title', course=c.course) }}</h2></div>
+      <div class="dialog-body"><p class="m-0">{{ t('adm.delete_course_text') }}</p></div>
+      <div class="dialog-foot">
+        <form method="dialog"><button type="submit" class="btn btn-ghost">{{ t('form.cancel') }}</button></form>
+        <form method="post" action="{{ url_for('admin_course_delete', course=c.course) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-danger">{{ t('adm.delete_course_yes') }}</button>
+        </form>
+      </div>
+    </dialog>
+  </div>
+  {% else %}
+  <div class="table-wrap">
+    <table class="labs cards">
+      <colgroup><col class="c-switch"><col class="c-lab"><col class="c-due"><col><col class="c-actions"></colgroup>
+      <thead><tr><th scope="col">{{ t('adm.col_active') }}</th><th scope="col">{{ t('adm.col_lab') }}</th><th scope="col">{{ t('adm.col_deadline') }}</th><th scope="col" title="{{ t('adm.subs_cell_title') }}">{{ t('adm.col_students') }}</th><th scope="col"></th></tr></thead>
+      <tbody>
+      {% for e in c.labs %}
+      <tr class="{{ '' if e.lab.active else 'off' }}">
+        <td class="t-side" data-label="{{ t('adm.col_active') }}">
+          <form method="post" action="{{ url_for('admin_lab_active', name=e.lab.name) }}" class="inline switch-form" data-inplace>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="active" value="{{ 0 if e.lab.active else 1 }}">
+            <button type="submit" class="switch" role="switch" aria-checked="{{ 'true' if e.lab.active else 'false' }}"
+                    aria-label="{{ t('adm.switch_visible_label', lab=e.lab.name) if e.lab.active else t('adm.switch_hidden_label', lab=e.lab.name) }}"
+                    title="{{ t('adm.switch_visible_title') if e.lab.active else t('adm.switch_hidden_title') }}"><span class="knob"></span></button>
+          </form>
+        </td>
+        <td class="nowrap t-main">{{ e.lab.name }}</td>
+        <td class="nowrap t-sub"><span>{{ e.lab.due_at | localtime }}<span class="flag-slot">{% if e.lab.active and e.lab.due_at < now %}<span class="flag tip" tabindex="0" role="img" aria-label="{{ t('adm.deadline_over') }}" title="{{ t('adm.deadline_over') }}: {{ t('adm.deadline_over_title') }}">⚠</span>{% endif %}</span></span></td>
+        <td data-label="{{ t('adm.col_students') }}" class="t-sub2"><span title="{{ t('adm.subs_cell_title') }}">{{ e.students }} / {{ c.students }}</span>{% set pl = plan.get(e.lab.name) %}{% if pl and pl.warn %}<br><span class="badge fail tip" tabindex="0" title="{{ t('adm.deletion_title') }}">{{ t('adm.deletion_badge', date=pl.delete_at | localdate) }}</span>{% endif %}</td>
+        <td class="row-actions t-act">
+          <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_lab_submissions', name=e.lab.name) }}">{{ t('adm.col_submissions') }}</a>
+          <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_lab_edit', name=e.lab.name) }}">{{ t('adm.edit') }}</a>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</details>
+{% else %}
+<div class="card"><p class="muted m-0">{{ t('adm.no_labs_html') }}</p></div>
+{% endfor %}
+{% endblock %}

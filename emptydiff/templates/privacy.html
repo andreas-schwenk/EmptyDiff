@@ -1,0 +1,87 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{% extends "base.html" %}
+{% block title %}{{ t('priv.page_title') }} · EmptyDiff{% endblock %}
+{% macro val(key) -%}
+{%- if p[key].strip() %}{{ p[key] }}{% else %}<mark class="missing">{{ t('priv.missing', field=key) }}</mark>{% endif -%}
+{%- endmacro %}
+{% macro mail(key) -%}
+{%- if p[key].strip() %}<a href="mailto:{{ p[key].strip() }}">{{ p[key].strip() }}</a>{% else %}<mark class="missing">{{ t('priv.missing', field=key) }}</mark>{% endif -%}
+{%- endmacro %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ t('priv.title') }}</h1>
+    <p class="subtitle">{{ t('priv.subtitle') }}</p>
+  </div>
+</div>
+
+<div class="card legal">
+  <h2>{{ t('priv.h1') }}</h2>
+  <p>
+    <b>{{ val('controller') }}</b><br>
+    {% if p.controller_address.strip() %}{% for line in p.controller_address.splitlines() %}{{ line }}<br>{% endfor %}{% else %}<mark class="missing">{{ t('priv.missing', field='controller_address') }}</mark><br>{% endif %}
+    {{ t('priv.email_html', mail=mail('controller_email')) }}
+  </p>
+  <p>{{ t('priv.dpo_html', dpo=mail('dpo_email'), contact=mail('contact_email')) }}</p>
+
+  <h2>{{ t('priv.h2') }}</h2>
+  <p>{{ t('priv.purpose') }}</p>
+
+  <h2>{{ t('priv.h3') }}</h2>
+  <ul>
+    <li>{{ t('priv.d_email_html') }}</li>
+    <li>{{ t('priv.d_code_html', hours=login_code_hours) }}</li>
+    <li>{{ t('priv.d_subs_html') }}</li>
+    <li>{{ t('priv.d_credit_html') }}</li>
+    <li>{{ t('priv.d_logs_html', days=p.log_days) }}</li>
+  </ul>
+  <p>{{ t('priv.d_external') }}</p>
+
+  <h2>{{ t('priv.h4') }}</h2>
+  <ul>
+    <li>{{ t('priv.l_main', national=t('priv.l_national', basis=p.legal_basis) if p.legal_basis.strip() else '') }}</li>
+    <li>{{ t('priv.l_logs') }}</li>
+    <li>{{ t('priv.l_cookie') }}</li>
+  </ul>
+
+  <h2>{{ t('priv.h5') }}</h2>
+  <ul>
+    <li>{{ t('priv.a_staff') }}</li>
+    <li>{{ t('priv.a_server') }}</li>
+    <li>{{ t('priv.a_nothird') }}</li>
+  </ul>
+
+  <h2>{{ t('priv.h6') }}</h2>
+  <ul>
+    <li>{{ t('priv.s_subs_html', days=retention_days, years=retention_years) }}</li>
+    <li>{{ t('priv.s_codes_html', hours=login_code_hours) }}</li>
+    <li>{{ t('priv.s_logs_html', days=p.log_days) }}</li>
+    <li>{{ t('priv.s_cookies_html') }}</li>
+  </ul>
+
+  <h2>{{ t('priv.h7') }}</h2>
+  <div class="table-wrap">
+    <table class="defs">
+      <thead><tr><th scope="col">{{ t('priv.c_name') }}</th><th scope="col">{{ t('priv.c_purpose') }}</th><th scope="col">{{ t('priv.c_duration') }}</th><th scope="col">{{ t('priv.c_basis') }}</th></tr></thead>
+      <tbody>
+        <tr><td><code>session</code></td><td data-label="{{ t('priv.c_purpose') }}">{{ t('priv.c_session_purpose') }}</td><td data-label="{{ t('priv.c_duration') }}">{{ t('priv.c_session_duration', hours=session_hours) }}</td><td data-label="{{ t('priv.c_basis') }}">{{ t('priv.c_session_basis') }}</td></tr>
+        <tr><td><code>emptydiff_remember</code></td><td data-label="{{ t('priv.c_purpose') }}">{{ t('priv.c_remember_purpose') }}</td><td data-label="{{ t('priv.c_duration') }}">{{ t('priv.c_remember_duration', days=remember_days) }}</td><td data-label="{{ t('priv.c_basis') }}">{{ t('priv.c_remember_basis') }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>{{ t('priv.c_note') }}</p>
+
+  <h2>{{ t('priv.h8') }}</h2>
+  <p>{{ t('priv.auto') }}</p>
+
+  <h2>{{ t('priv.h9') }}</h2>
+  <p>{{ t('priv.rights') }}</p>
+  <p>{{ t('priv.authority_html', authority=authority_link) }}</p>
+
+  <h2>{{ t('priv.h10') }}</h2>
+  <p>{{ t('priv.required') }}</p>
+</div>
+{% endblock %}

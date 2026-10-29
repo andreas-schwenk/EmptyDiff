@@ -1,0 +1,38 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, student_help with context %}
+{% block title %}{{ t('title.labs') }} · EmptyDiff{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ t('index.title') }}</h1>
+    <p class="subtitle">{{ t('index.subtitle_html') }}</p>
+  </div>
+</div>
+<div class="card">
+  {% if not rows %}
+  <p class="muted m-0">{{ t('index.empty') }}</p>
+  {% else %}
+  <div class="table-wrap">
+    <table class="cards">
+      <thead><tr><th scope="col">{{ t('index.lab') }}</th><th scope="col">{{ t('index.deadline') }}</th><th scope="col">{{ t('index.submissions') }}</th><th scope="col">{{ t('index.status') }}</th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+      <tr>
+        <td class="t-main">{% if r.lab.active %}<a href="{{ url_for('lab', name=r.lab.name) }}">{{ r.lab.name }}</a>{% elif is_admin %}<a href="{{ url_for('lab', name=r.lab.name) }}">{{ r.lab.name }}</a> <span class="badge hidden tip" tabindex="0" role="img" aria-label="{{ t('index.hidden') }}" title="{{ t('index.hidden_title') }}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/></svg></span>{% else %}{{ r.lab.name }} <small title="{{ t('index.ended_title') }}">{{ t('index.ended') }}</small>{% endif %}</td>
+        <td class="t-sub">{{ r.lab.due_at | localtime }}</td>
+        <td data-label="{{ t('index.submissions') }}" class="t-sub2">{{ r.attempts }} / {{ max_attempts }}</td>
+        <td class="t-side">{% if r.last %}<a class="no-underline" href="{{ url_for('submission', sub_id=r.last.id) }}">{{ status_badge(r.last, r.lab) }}</a>{% else %}{{ status_badge(none, r.lab) }}{% endif %}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted legend">{{ t('index.legend_html', max=max_attempts) }}</p>
+  {% endif %}
+</div>
+{{ student_help() }}
+{% endblock %}

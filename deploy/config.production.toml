@@ -1,0 +1,42 @@
+# Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+# Created in part with AI help (Claude, Anthropic).
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# /etc/emptydiff/config.toml - the only configuration file of EmptyDiff (mode 0640, group emptydiff).
+# Created by install.sh only the first time and never overwritten afterwards. Fill in all values,
+# then run install.sh again. More settings: see config.example.toml in the repo.
+
+data_dir = "/var/lib/emptydiff"
+base_url = "https://emptydiff.example.org"   # public name of the server (https, without path); "http://<name or IPv4>" only for closed networks, see INSTALL.md
+# retention_days = 730
+
+[ui]
+# default_language = "EN"   # "DE" or "EN" (more languages: a block in the files of emptydiff/strings/)
+
+[auth]
+allowed_domains = ["student.example.edu", "example.edu"]   # who may log in (exact domains)
+admins = ["dozent@example.edu"]                            # lecturers/supervisors; the first address receives ACME notices
+
+[languages]
+# enabled = ["octave"]      # the programming languages this server offers (install.sh installs their packages)
+
+[mail]
+backend = "smtp"
+host = "smtp.example.org"
+port = 25
+security = "none"           # "none", "starttls" or "ssl"
+# user = ""
+# password = ""
+sender = "emptydiff@example.org"
+
+[privacy]
+controller = ""
+controller_address = ""
+controller_email = ""
+dpo_email = ""
+contact_email = ""
+authority = ""
+authority_url = ""
+# legal_basis = ""
+# imprint_url = ""
+# log_days = 7

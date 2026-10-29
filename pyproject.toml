@@ -1,0 +1,9 @@
+# Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+# Created in part with AI help (Claude, Anthropic).
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Only the formatter settings (dev/docker.sh format and lint); EmptyDiff itself is not a pip package.
+# The style rules for pycodestyle are in setup.cfg.
+[tool.black]
+line-length = 79
+target-version = ["py311"]

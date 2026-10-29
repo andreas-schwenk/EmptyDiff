@@ -1,0 +1,63 @@
+# Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+# Created in part with AI help (Claude, Anthropic).
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Example configuration for local development (EMPTYDIFF_DEV=1).
+# Production: /etc/emptydiff/config.toml (mode 0640, not in the repo) - there is only this one configuration file.
+# Values not listed come from the defaults in emptydiff/core/config.py.
+
+data_dir = "data"
+base_url = "http://127.0.0.1:8091"
+# retention_days = 730      # retention of submissions from the deadline or the last submission (days)
+
+[ui]
+# default_language = "EN"   # language if the browser asks for none that is available (language code from the files in emptydiff/strings/)
+
+[auth]
+allowed_domains = ["student.example.edu", "example.edu"]   # domains of the mail addresses that may log in
+admins = ["dozent@example.edu"]                            # lecturers/supervisors (administration area)
+# Limits for requesting a login code (defaults shown; not for entering the code, not for uploads):
+# max_codes_per_email_hour = 8
+# max_codes_per_ip_hour = 200     # a whole computer room can sit behind one address
+# code_cooldown_seconds = 30
+# min_form_seconds = 2            # forms sent faster than this are refused as bots
+# remember_days = 180       # "stay logged in" (only with consent), validity from last use
+
+[limits]
+# max_attempts = 7          # submissions per student and lab (the same for all labs)
+
+[mail]
+backend = "simulate"        # only with EMPTYDIFF_DEV=1; "smtp" in production
+# Sending via Python (smtplib). Example for production:
+# backend = "smtp"
+# host = "smtp.example.org"
+# port = 25                 # 25 (relay), 587 (starttls) or 465 (ssl)
+# security = "none"         # "none", "starttls" or "ssl"
+# user = ""                 # empty: no login at the server
+# password = ""
+# sender = "emptydiff@example.org"
+# timeout_seconds = 15
+# Check with: python3 -m emptydiff mail-test <address>
+
+[grader]
+sandbox = "bwrap"           # "none" only with EMPTYDIFF_DEV=1 (e.g. natively on macOS)
+# batch_size = 10            # submissions fetched per round; they are always graded one after another
+
+[languages]
+enabled = ["octave"]        # the programming languages this server offers (install.sh installs their packages)
+# One section per language; the defaults come from the language adapters in emptydiff/core/languages/.
+# [languages.octave]
+# command = "octave-cli"                         # name of the interpreter in the sandbox
+# suspicious_words = ["exit", "evalin", ...]     # words that mark a submission as conspicuous (admins only)
+
+[privacy]   # Details for /privacy. Only placeholders here; real values only in /etc/emptydiff/config.toml
+controller = "Example University"
+controller_address = "1 Example Street\n12345 Example City"
+controller_email = "privacy-controller@example.org"
+dpo_email = "privacy-officer@example.org"
+contact_email = "emptydiff@example.org"
+authority = "Example Data Protection Authority"
+authority_url = "https://example.org/authority"
+legal_basis = "Section 3 Example Data Protection Act"   # optional: national supplement to Art. 6(1)(e) GDPR
+imprint_url = "https://example.org/imprint"
+# log_days = 7              # retention of the web server access logs (Apache/logrotate)

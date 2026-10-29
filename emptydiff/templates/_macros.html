@@ -1,0 +1,39 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{# State of a lab: credit rule, the last submission `last` counts (for the lab `lab`) #}
+{# Collapsible help box for students (import with context: needs max_attempts) #}
+{% macro student_help() %}
+<details class="help">
+  <summary>{{ t('help.student_title') }}</summary>
+  <ol>
+    <li>{{ t('help.student_1') }}</li>
+    <li>{{ t('help.student_2') }}</li>
+    <li>{{ t('help.student_3') }}</li>
+    <li>{{ t('help.student_4') }}</li>
+    <li>{{ t('help.student_5', max=max_attempts) }}</li>
+    <li>{{ t('help.student_6') }}</li>
+  </ol>
+  <p class="muted">{{ t('help.student_contact_html', contact=contact_html()) }}</p>
+</details>
+{% endmacro %}
+
+{% macro status_badge(last, lab) -%}
+{%- if not last %}<span class="badge">{{ t('status.none') }}</span>
+{%- elif last.status in ('queued', 'running') %}<span class="badge pending">{{ t('status.pending') }}</span>
+{%- elif last.status == 'error' %}<span class="badge fail">{{ t('status.error') }}</span>
+{%- elif not lab.show_report %}<span class="badge">{{ t('status.received') }}</span>
+{%- elif last.passed and last.complete %}<span class="badge ok">{{ t('status.passed') }}</span>
+{%- elif last.passed %}<span class="badge fail" title="{{ t('status.missing', files=last.missing_files.splitlines() | join(', ')) }}">{{ t('status.incomplete') }}</span>
+{%- else %}<span class="badge fail">{{ t('status.failed') }}</span>{% endif %}
+{%- if last and last.late %} <span class="badge late" title="{{ t('status.late_title') }}">{{ t('status.late') }}</span>{% endif %}
+{%- endmacro %}
+
+{# Source text with line numbers and highlighting; `f` comes from highlight.view (kind 'text') #}
+{% macro code_view(f) %}
+<div class="src">
+  <pre class="gutter" aria-hidden="true">{% for n in range(1, f.lines + 1) %}{{ n }}{{ "\n" if not loop.last }}{% endfor %}</pre>
+  <pre class="code">{% for kind, text in f.tokens %}{% if kind %}<span class="tok-{{ kind }}">{{ text }}</span>{% else %}{{ text }}{% endif %}{% endfor %}</pre>
+</div>
+{% endmacro %}

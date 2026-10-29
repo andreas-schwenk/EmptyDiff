@@ -1,0 +1,51 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{% extends "base.html" %}
+{% block title %}{{ t('credit.title') }} · {{ t('adm.nav') }} · EmptyDiff{% endblock %}
+{% block content %}
+{% include "_admin_nav.html" %}
+<div class="page-head">
+  <div>
+    <h1>{{ t('credit.title') }}</h1>
+    <p class="subtitle">{{ t('credit.subtitle_html') }}</p>
+  </div>
+  {% if course %}<a class="btn btn-ghost btn-sm" href="{{ url_for('admin_credit_csv', course=course) }}">{{ t('credit.csv') }}</a>{% endif %}
+</div>
+{% if courses %}
+<nav class="pills" aria-label="{{ t('credit.course') }}">
+  {% for c in courses %}<a href="{{ url_for('admin_credit', course=c) }}"{% if c == course %} aria-current="page"{% endif %}>{{ c }}</a>{% endfor %}
+</nav>
+{% endif %}
+<section class="card">
+  {% if not rows %}
+  <p class="muted m-0">{{ t('credit.empty_course') if course else t('credit.empty') }}</p>
+  {% else %}
+  <div class="table-wrap">
+    <table class="matrix">
+      <thead>
+        <tr><th scope="col">{{ t('credit.student') }}</th>{% for l in labs %}<th scope="col" title="{{ l.name }}">{{ l.name.split('-', 1)[1] }}</th>{% endfor %}<th scope="col">{{ t('credit.passed_col') }}</th></tr>
+      </thead>
+      <tbody>
+      {% for r in rows %}
+      <tr>
+        <td class="who-cell">{{ r.email }}</td>
+        {% for c in r.cells %}
+        <td class="cell {{ c.state }}" title="{{ t('credit.cell_title', lab=labs[loop.index0].name, state=labels[c.state] or t('credit.no_submission'), late=t('credit.late_tag') if c.late else '', attempts=t('credit.attempts_tag', n=c.attempts) if c.attempts else '') }}">
+          {%- if c.sub_id %}<a href="{{ url_for('admin_submission', sub_id=c.sub_id) }}">
+          {%- if c.state == 'pass' %}✓{% elif c.state == 'fail' %}✗{% elif c.state == 'pending' %}…{% elif c.state == 'error' %}!{% else %}●{% endif %}
+          {%- if c.late %}<sup>⏳</sup>{% endif %}</a>
+          {%- else %}–{% endif -%}
+        </td>
+        {% endfor %}
+        <td class="total">{{ r.passed }} / {{ labs|length }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="legend muted">{{ t('credit.legend') }}</p>
+  {% endif %}
+</section>
+{% endblock %}

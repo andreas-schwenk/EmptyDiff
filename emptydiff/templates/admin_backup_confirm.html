@@ -1,0 +1,70 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{% extends "base.html" %}
+{% block title %}{{ t('bkc.page_title') }} · EmptyDiff{% endblock %}
+{% block content %}
+{% include "_admin_nav.html" %}
+<a class="back" href="{{ url_for('admin_backup') }}">{{ t('bkc.back') }}</a>
+<div class="page-head">
+  <div>
+    <h1>{{ t('bkc.title_full') if archive.kind == 'full' else t('bkc.title_labs') }}</h1>
+    <p class="subtitle">{{ t('bkc.verified') }}</p>
+  </div>
+</div>
+
+<section class="card">
+  <h2 class="card-title">{{ t('bkc.contents') }}</h2>
+  <dl class="facts">
+    <dt>{{ t('bkc.kind') }}</dt><dd>{{ t('bkc.kind_full') if archive.kind == 'full' else t('bkc.kind_labs') }}</dd>
+    <dt>{{ t('bkc.created') }}</dt><dd>{{ archive.created_at | localtime }}</dd>
+    <dt>{{ t('bkc.labs') }}</dt><dd>{{ archive.counts.labs }}</dd>
+    {% if archive.kind == 'full' %}
+    <dt>{{ t('bkc.subs') }}</dt><dd>{{ t('bkc.subs_value', n=archive.counts.submissions, files=archive.counts.submission_files) }}</dd>
+    {% endif %}
+    <dt>{{ t('bkc.size') }}</dt><dd>{{ size_mb }} MB</dd>
+  </dl>
+</section>
+
+{% if archive.kind == 'full' %}
+<section class="retention-warning" role="alert">
+  <div>
+    <b>{{ t('bkc.warn_head') }}</b>
+    <span>{{ t('bkc.warn_text_html', labs=current.labs, subs=current.submissions, backup=link(url_for('admin_backup_full'), t('bkc.full_backup_link'))) }}</span>
+  </div>
+</section>
+<section class="card danger-zone">
+  <h2 class="card-title">{{ t('bkc.restore') }}</h2>
+  <form method="post" action="{{ url_for('admin_backup_apply') }}" class="inline-form" data-busy="{{ t('bkc.restoring') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="token" value="{{ token }}">
+    <div class="field m-0">
+      <label for="confirm">{{ t('bkc.confirm_html', word=t('backup.confirm_word')) }}</label>
+      <input id="confirm" type="text" name="confirm" autocomplete="off" required autofocus>
+    </div>
+    <button type="submit" class="btn-danger">{{ t('bkc.replace') }}</button>
+  </form>
+</section>
+{% else %}
+<section class="card">
+  <h2 class="card-title">{{ t('bkc.what_happens') }}</h2>
+  {% if new %}<p>{{ t('bkc.new_html', n=new|length) }}</p>
+  <div class="chips">{% for n in new %}<code class="chip">{{ n }}</code>{% endfor %}</div>{% endif %}
+  {% if updated %}<p>{{ t('bkc.updated_html', n=updated|length) }}</p>
+  <div class="chips">{% for n in updated %}<code class="chip">{{ n }}</code>{% endfor %}</div>{% endif %}
+  <p class="muted mb-0">{{ t('bkc.untouched') }}</p>
+  <form method="post" action="{{ url_for('admin_backup_apply') }}" class="card-actions" data-busy="{{ t('bkc.importing') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="token" value="{{ token }}">
+    <button type="submit">{{ t('bkc.import') }}</button>
+  </form>
+</section>
+{% endif %}
+
+<form class="mt-1" method="post" action="{{ url_for('admin_backup_cancel') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="token" value="{{ token }}">
+  <button type="submit" class="btn btn-ghost">{{ t('bkc.cancel') }}</button>
+</form>
+{% endblock %}

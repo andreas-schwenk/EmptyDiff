@@ -1,0 +1,17 @@
+# Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+# Created in part with AI help (Claude, Anthropic).
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+[Unit]
+Description=EmptyDiff run folders (RAM disk of fixed size for the checks)
+# Student programs run in folders below this mount. A program that writes without end can fill this RAM disk, but
+# neither the data disk nor more memory than the size below. The folders are empty after every reboot.
+
+[Mount]
+What=tmpfs
+Where=@DATA_DIR@/run
+Type=tmpfs
+Options=size=256M,mode=1777,nosuid,nodev,noexec
+
+[Install]
+WantedBy=local-fs.target

@@ -1,0 +1,33 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{% extends "base.html" %}
+{% block title %}{{ t('clone.page_title', course=course) }} · {{ t('adm.nav') }} · EmptyDiff{% endblock %}
+{% block content %}
+{% include "_admin_nav.html" %}
+<a class="back" href="{{ url_for('admin_index', open=course, _anchor=course) }}">{{ t('adm.back') }}</a>
+<div class="page-head">
+  <div>
+    <h1>{{ t('clone.title', course=course) }}</h1>
+    <p class="subtitle">{{ t('clone.subtitle', count=count) }}</p>
+  </div>
+</div>
+<section class="card">
+  <form method="post" class="narrow">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field">
+      <label for="f-new">{{ t('clone.new_course') }}</label>
+      <input id="f-new" type="text" name="new_course" placeholder="am27" required pattern="[a-z]{1,8}[0-9]{2}" autocapitalize="none" spellcheck="false">
+      <small class="muted">{{ t('clone.new_course_hint_html', course=course) }}</small>
+    </div>
+    <div class="field">
+      <label for="f-shift">{{ t('clone.shift') }}</label>
+      <input id="f-shift" type="number" name="shift_days" value="365" min="-3650" max="3650" required>
+      <small class="muted">{{ t('clone.shift_hint') }}</small>
+    </div>
+    <p class="note">{{ t('clone.note_html') }}</p>
+    <div class="form-actions"><button type="submit">{{ t('clone.submit') }}</button></div>
+  </form>
+</section>
+{% endblock %}

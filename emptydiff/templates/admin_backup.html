@@ -1,0 +1,43 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{% extends "base.html" %}
+{% block title %}{{ t('bk.title') }} · {{ t('adm.nav') }} · EmptyDiff{% endblock %}
+{% block content %}
+{% include "_admin_nav.html" %}
+<div class="page-head">
+  <div>
+    <h1>{{ t('bk.title') }}</h1>
+    <p class="subtitle">{{ t('bk.subtitle') }}</p>
+  </div>
+</div>
+
+<p class="flash error" role="note"><span>{{ t('bk.warning_html') }}</span></p>
+
+<div class="grid">
+  <section class="card accent">
+    <h2 class="card-title"><span class="dot"></span>{{ t('bk.full_title') }}</h2>
+    <p class="muted mt-0">{{ t('bk.full_text') }}</p>
+    <p class="mb-0"><a class="btn" href="{{ url_for('admin_backup_full') }}">{{ t('bk.full_button') }}</a></p>
+  </section>
+  <section class="card">
+    <h2 class="card-title">{{ t('bk.labs_title') }}</h2>
+    <p class="muted mt-0">{{ t('bk.labs_text_html') }}</p>
+    <p class="mb-0"><a class="btn btn-ghost" href="{{ url_for('admin_backup_labs') }}">{{ t('bk.labs_button') }}</a></p>
+  </section>
+</div>
+
+<section class="card">
+  <h2 class="card-title">{{ t('bk.restore_title') }}</h2>
+  <p class="muted mt-0">{{ t('bk.restore_text_html', mb=max_mb) }}</p>
+  <form method="post" action="{{ url_for('admin_backup_upload') }}" enctype="multipart/form-data" data-busy="{{ t('bk.uploading') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field">
+      <label for="archive">{{ t('bk.file') }}</label>
+      <input id="archive" type="file" name="archive" accept=".zip,application/zip" required>
+    </div>
+    <button type="submit">{{ t('bk.upload') }}</button>
+  </form>
+</section>
+{% endblock %}

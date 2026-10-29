@@ -1,0 +1,28 @@
+{
+ "DE": {
+  "ln.octave.err_provided_duplicate": "Bereitgestellte Funktionen: Die Funktion „{name}“ kommt mehrfach vor.",
+  "ln.octave.err_provided_name": "Bereitgestellte Funktionen: Der Funktionsname „{name}“ ist ungültig oder für das System reserviert.",
+  "ln.octave.err_provided_no_function": "Bei den bereitgestellten Funktionen fehlt eine Zeile, die mit „function“ beginnt.",
+  "ln.octave.err_provided_outside": "Bei den bereitgestellten Funktionen darf vor der ersten Funktion nur Kommentar stehen.",
+  "ln.octave.err_tb_function": "In der Testbench darf keine Zeile mit „function“ stehen. Den Rahmen ergänzt das System; eigene Funktionen gehören in das Feld „Hilfsfunktionen“.",
+  "ln.octave.helpers_intro_html": "Hier können Sie eigene Octave-Funktionen für die Testbench schreiben, zum Beispiel um einen Vergleich, den Sie mehrfach brauchen, nur einmal zu formulieren. Jede Funktion wird vollständig mit <code>function … end</code> geschrieben. Sie sind nur für die Testbench sichtbar, nicht für die Abgaben. Auch in den Hilfsfunktionen dürfen <code>check</code> und <code>check_close</code> vorkommen.",
+  "ln.octave.provided_intro_html": "Hier stehen Octave-Funktionen, die das System vor jeder Prüfung für das Programm der Studierenden bereitlegt, zum Beispiel die Lösung einer früheren Aufgabe, auf der diese Aufgabe aufbaut. Studierende müssen sie nicht abgeben. Jede Funktion wird eine eigene Datei <code>Name.m</code>, benannt nach der Funktion (aus <code>function y = gauss(A, b)</code> wird <code>gauss.m</code>). Schreiben Sie jede Funktion vollständig mit <code>function … end</code> und ohne Unterfunktionen. Gibt ein Studierender eine Datei desselben Namens ab, gilt seine. Auch die Testbench kann diese Funktionen aufrufen.",
+  "ln.octave.req_example": "addone.m",
+  "ln.octave.tb_example": "x = addone(1);\ncheck(x == 2, 'addone(1) liefert 2', 'addone(1) liefert nicht 2');\ncheck_close(addone([1 2]), [2 3], 1e-12, 'addone mit Vektor', 'addone mit Vektor ist falsch');",
+  "ln.octave.tb_frame_html": "Schreiben Sie nur die Anweisungen. Die Zeile <code>function testbench()</code> und das Ende ergänzt das System selbst. Geprüft wird mit zwei Funktionen:",
+  "ln.octave.tb_template": "% Rufen Sie die Funktionen der Studierenden auf und prüfen Sie die Ergebnisse, z. B.:\n% check(addone(1) == 2, 'addone(1) liefert 2', 'addone(1) liefert nicht 2');\n% check_close(addone([1 2]), [2 3], 1e-12, 'addone für Vektoren', 'addone für Vektoren falsch');\n"
+ },
+ "EN": {
+  "ln.octave.err_provided_duplicate": "Provided functions: the function “{name}” occurs more than once.",
+  "ln.octave.err_provided_name": "Provided functions: the function name “{name}” is invalid or reserved for the system.",
+  "ln.octave.err_provided_no_function": "The provided functions contain no line that starts with “function”.",
+  "ln.octave.err_provided_outside": "Before the first provided function only comments are allowed.",
+  "ln.octave.err_tb_function": "The testbench must not contain a line with “function”. The system adds the frame itself; your own functions belong in the “Helper functions” field.",
+  "ln.octave.helpers_intro_html": "Here you can write your own Octave functions for the testbench, for example to formulate a comparison that you need several times only once. Write every function completely with <code>function … end</code>. They are visible to the testbench only, not to the submissions. <code>check</code> and <code>check_close</code> may also be used in the helper functions.",
+  "ln.octave.provided_intro_html": "This is where you put Octave functions that the system makes available to the students' program before every check, for example the solution of an earlier task that this task builds on. Students do not have to hand them in. Every function becomes its own file <code>Name.m</code>, named after the function (<code>function y = gauss(A, b)</code> becomes <code>gauss.m</code>). Write every function completely with <code>function … end</code> and without subfunctions. If a student hands in a file of the same name, theirs is used. The testbench can call these functions as well.",
+  "ln.octave.req_example": "addone.m",
+  "ln.octave.tb_example": "x = addone(1);\ncheck(x == 2, 'addone(1) returns 2', 'addone(1) does not return 2');\ncheck_close(addone([1 2]), [2 3], 1e-12, 'addone with a vector', 'addone with a vector is wrong');",
+  "ln.octave.tb_frame_html": "Write only the statements. The system adds the line <code>function testbench()</code> and the end itself. Two functions do the checking:",
+  "ln.octave.tb_template": "% Call the students' functions and check the results, e.g.:\n% check(addone(1) == 2, 'addone(1) returns 2', 'addone(1) does not return 2');\n% check_close(addone([1 2]), [2 3], 1e-12, 'addone for vectors', 'addone is wrong for vectors');\n"
+ }
+}

@@ -1,0 +1,54 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{% extends "base.html" %}
+{% block title %}{{ t('help.title') }} · {{ t('adm.nav') }} · EmptyDiff{% endblock %}
+{% block content %}
+{% include "_admin_nav.html" %}
+<div class="page-head">
+  <div>
+    <h1>{{ t('help.title') }}</h1>
+    <p class="subtitle">{{ t('help.subtitle') }}</p>
+  </div>
+</div>
+
+<section class="card">
+  <h2 class="card-title">{{ t('help.flow_title') }}</h2>
+  <ol class="steps">
+    <li>{{ t('help.flow_1_html') }}</li>
+    <li>{{ t('help.flow_2_html') }}</li>
+    <li>{{ t('help.flow_3_html') }}</li>
+    <li>{{ t('help.flow_4_html') }}</li>
+    <li>{{ t('help.flow_5_html') }}</li>
+    <li>{{ t('help.flow_6_html') }}</li>
+    <li>{{ t('help.flow_7_html', days=days, years=years) }}</li>
+    <li>{{ t('help.flow_8_html') }}</li>
+  </ol>
+</section>
+
+<section class="card">
+  <h2 class="card-title">{{ t('help.terms_title') }}</h2>
+  <dl class="terms">
+    <dt>{{ t('help.term_course') }}</dt><dd>{{ t('help.term_course_text') }}</dd>
+    <dt>{{ t('help.term_lab') }}</dt><dd>{{ t('help.term_lab_text') }}</dd>
+    <dt>{{ t('help.term_required') }}</dt><dd>{{ t('help.term_required_text') }}</dd>
+    <dt>{{ t('help.term_provided') }}</dt><dd>{{ t('help.term_provided_text') }}</dd>
+    <dt>{{ t('help.term_testbench') }}</dt><dd>{{ t('help.term_testbench_text', timeout=timeout) }}</dd>
+    <dt>{{ t('help.term_limit') }}</dt><dd>{{ t('help.term_limit_text', max=max_attempts) }}</dd>
+    <dt>{{ t('help.term_late') }}</dt><dd>{{ t('help.term_late_text') }}</dd>
+    <dt>{{ t('help.term_visible') }}</dt><dd>{{ t('help.term_visible_text') }}</dd>
+    <dt>{{ t('help.term_result') }}</dt><dd>{{ t('help.term_result_text') }}</dd>
+  </dl>
+</section>
+
+<section class="card">
+  <h2 class="card-title">{{ t('help.problems_title') }}</h2>
+  <ul class="steps">
+    <li>{{ t('help.problem_limit') }}</li>
+    <li>{{ t('help.problem_testbench') }}</li>
+    <li>{{ t('help.problem_mail') }}</li>
+    <li>{{ t('help.problem_delete') }}</li>
+  </ul>
+</section>
+{% endblock %}

@@ -1,0 +1,156 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{% extends "base.html" %}
+{% block title %}{{ t('form.page_title', name=lab.name if lab else t('form.new_title_in', course=course)) }} · EmptyDiff{% endblock %}
+{% block content %}
+{% include "_admin_nav.html" %}
+{% set back_url = url_for('admin_index', open=course, _anchor=course) %}
+<a class="back" href="{{ back_url }}">{{ t('adm.back') }}</a>
+<div class="page-head">
+  <div>
+    <h1>{{ lab.name if lab else t('form.new_title_in', course=course) }}</h1>
+    {% if lab %}<p class="subtitle">{{ tn('adm.n_submissions', n_subs) }}</p>{% endif %}
+  </div>
+  {% if lab %}
+  <div class="toolbar-inline">
+    {% if lab.active %}<a class="btn btn-ghost btn-sm" title="{{ t('form.preview_student_title') }}" href="{{ url_for('lab', name=lab.name) }}">{{ t('form.preview_student') }}</a>
+    {% else %}<a class="btn btn-ghost btn-sm" title="{{ t('form.preview_title') }}" href="{{ url_for('lab', name=lab.name) }}">{{ t('form.preview') }}</a>{% endif %}
+    <a class="btn btn-ghost btn-sm" title="{{ t('form.submissions_title') }}" href="{{ url_for('admin_lab_submissions', name=lab.name) }}">{{ t('form.submissions') }}</a>
+    {% if n_subs %}<a class="btn btn-ghost btn-sm" href="{{ url_for('admin_lab_archive', name=lab.name) }}" title="{{ t('form.archive_title') }}">{{ t('form.archive_zip') }}</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+<p class="lead">{{ t('form.intro') }}</p>
+
+<form method="post" data-busy="{{ t('form.saving') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <section class="card">
+    <h2 class="card-title">{{ t('form.general') }}</h2>
+    {% if not lab %}<div class="field">
+      <label for="f-ident">{{ t('form.ident') }}</label>
+      <div class="input-group"><span class="prefix">{{ course }}-</span><input id="f-ident" type="text" name="ident" value="{{ v.ident }}" placeholder="1a" required maxlength="16" pattern="[A-Za-z0-9]{1,16}" autocapitalize="none" spellcheck="false"></div>
+      <small class="muted">{{ t('form.ident_hint_html', course=course) }}</small>
+    </div>{% endif %}
+    <div class="field narrow">
+      <label for="f-language">{{ t('form.language') }}</label>
+      <select id="f-language" name="language" data-language-select{% if language_locked %} disabled{% endif %}>
+        {% for l in language_choices %}<option value="{{ l.id }}" data-example="{{ t('ln.' ~ l.id ~ '.req_example') }}"{% if l.id == v.language %} selected{% endif %}>{{ l.name }} ({{ l.extension }}){% if not l.offered %} {{ t('form.language_not_offered') }}{% endif %}</option>{% endfor %}
+      </select>
+      {% if language_locked %}<input type="hidden" name="language" value="{{ v.language }}">{% endif %}
+      <small class="muted">{{ t('form.language_locked_hint') if language_locked else t('form.language_hint') }}</small>
+    </div>
+    <div class="field narrow">
+      <label for="f-due">{{ t('form.deadline') }}</label>
+      <input id="f-due" type="datetime-local" name="due_at" value="{{ v.due_at }}" required>
+      <small class="muted">{{ t('form.deadline_hint') }}</small>
+    </div>
+    <div class="field">
+      <label for="f-desc">{{ t('form.description') }}</label>
+      <textarea id="f-desc" name="description" rows="4">{{ v.description }}</textarea>
+      <small class="muted">{{ t('form.description_hint') }}</small>
+    </div>
+    <div class="field mb-0">
+      <label class="check">
+        <input type="checkbox" name="show_report" value="1"{% if v.show_report %} checked{% endif %}>
+        <span><b>{{ t('form.show_report') }}</b><br><small>{{ t('form.show_report_hint') }}</small></span>
+      </label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">{{ t('form.files') }}</h2>
+    <div class="field mb-0" data-names data-add="{{ t('form.req_add') }}" data-remove="{{ t('form.req_remove') }}"
+         data-empty="{{ t('form.req_empty') }}" data-label="{{ t('form.req_label') }}" data-placeholder="{{ t('form.req_placeholder', example=t('ln.' ~ v.language ~ '.req_example')) }}" data-placeholder-template="{{ t('form.req_placeholder', example='{example}') }}"
+         data-msg-space="{{ t('form.req_msg_space') }}" data-msg-invalid="{{ t('form.req_msg_invalid') }}" data-msg-dup="{{ t('form.req_msg_dup') }}">
+      <label for="f-req">{{ t('form.required') }}</label>
+      <small class="muted">{{ t('form.required_hint_html', example=t('ln.' ~ v.language ~ '.req_example')) }}</small>
+      <textarea id="f-req" name="required_files" rows="3" spellcheck="false" class="mono">{{ v.required_files }}</textarea>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">{{ t('form.testbench') }}</h2>
+    {% for l in language_choices %}
+    <div class="explain" data-language-block="{{ l.id }}"{% if l.id != v.language %} hidden{% endif %}>
+      <p>{{ t('form.tb_intro_html', timeout=timeout, language=l.name) }}</p>
+      <p>{{ t('ln.' ~ l.id ~ '.tb_frame_html') }}</p>
+      <ul>
+        <li>{{ t('form.tb_check_html') }}</li>
+        <li>{{ t('form.tb_close_html') }}</li>
+      </ul>
+      <p>{{ t('form.tb_example_label') }}</p>
+      <pre class="example">{{ t('ln.' ~ l.id ~ '.tb_example') }}</pre>
+      <p>{{ t('form.tb_result_html') }}</p>
+      <p>{{ t('form.tb_texts_html') }}</p>
+    </div>
+    {% endfor %}
+    <div class="field mb-0">
+      <textarea id="f-tb" name="testbench" rows="14" spellcheck="false" class="mono" data-highlight="{{ v.language }}" aria-label="{{ t('form.testbench') }}" required>{{ v.testbench }}</textarea>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">{{ t('form.helpers') }}</h2>
+    {% for l in language_choices %}
+    <div class="explain" data-language-block="{{ l.id }}"{% if l.id != v.language %} hidden{% endif %}>
+      <p>{{ t('ln.' ~ l.id ~ '.helpers_intro_html') }}</p>
+    </div>
+    {% endfor %}
+    <div class="field mb-0">
+      <textarea id="f-helpers" name="helpers" rows="8" spellcheck="false" class="mono" data-highlight="{{ v.language }}" aria-label="{{ t('form.helpers') }}">{{ v.helpers }}</textarea>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">{{ t('form.provided') }}</h2>
+    {% for l in language_choices %}
+    <div class="explain" data-language-block="{{ l.id }}"{% if l.id != v.language %} hidden{% endif %}>
+      <p>{{ t('ln.' ~ l.id ~ '.provided_intro_html') }}</p>
+    </div>
+    {% endfor %}
+    <div class="field mb-0">
+      <textarea id="f-provided" name="provided" rows="8" spellcheck="false" class="mono" data-highlight="{{ v.language }}" aria-label="{{ t('form.provided') }}">{{ v.provided }}</textarea>
+    </div>
+  </section>
+
+  <div class="form-actions sticky-actions">
+    <a class="btn btn-ghost" href="{{ back_url }}" data-open-dialog="discard-dialog">{{ t('form.cancel') }}</a>
+    <button type="submit">{{ t('form.save') if lab else t('form.create') }}</button>
+  </div>
+</form>
+
+<dialog id="discard-dialog" aria-labelledby="discard-title">
+  <div class="dialog-head"><h2 id="discard-title">{{ t('form.discard_title') }}</h2></div>
+  <div class="dialog-body"><p class="m-0">{{ t('form.discard_text') }}</p></div>
+  <form method="dialog" class="dialog-foot">
+    <button type="submit" class="btn btn-ghost">{{ t('form.discard_keep') }}</button>
+    <a class="btn btn-danger" href="{{ back_url }}">{{ t('form.discard_yes') }}</a>
+  </form>
+</dialog>
+
+{% if lab %}
+<section class="card danger-zone">
+  <h2 class="card-title">{{ t('form.delete_title') }}</h2>
+  <p class="muted mt-0">{{ t('form.delete_hint') }}</p>
+  <button type="button" class="btn btn-danger" data-open-dialog="delete-dialog">{{ t('form.delete') }}</button>
+</section>
+
+<dialog id="delete-dialog" aria-labelledby="delete-title">
+  <div class="dialog-head"><h2 id="delete-title">{{ t('form.delete_dialog_title', lab=lab.name) }}</h2></div>
+  <div class="dialog-body">
+    <p>{{ t('form.delete_dialog_text') }}</p>
+    {% if n_subs %}<p class="m-0"><b>{{ tn('form.delete_dialog_subs', n_subs) }}</b></p>{% endif %}
+  </div>
+  <div class="dialog-foot">
+    <form method="dialog"><button type="submit" class="btn btn-ghost">{{ t('form.cancel') }}</button></form>
+    <form method="post" action="{{ url_for('admin_lab_delete', name=lab.name) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-danger">{{ t('form.delete_yes') }}</button>
+    </form>
+  </div>
+</dialog>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,142 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{% extends "base.html" %}
+{% from "_macros.html" import code_view %}
+{% set nav_admin = admin_view %}
+{% block title %}{{ t('sub.page_title', n=sub.attempt, lab=lab.name) }} · EmptyDiff{% endblock %}
+{% block head %}{% if pending %}<noscript><meta http-equiv="refresh" content="5"></noscript>{% endif %}{% endblock %}
+{% block content %}
+{% if nav_admin %}
+<a class="back" href="{{ url_for('admin_lab_submissions', name=lab.name) }}">{{ t('sub.back_admin', lab=lab.name) }}</a>
+{% else %}
+<a class="back" href="{{ url_for('lab', name=lab.name) }}">{{ t('sub.back_lab', lab=lab.name) }}</a>
+{% endif %}
+{% include "_hidden_banner.html" %}
+<div class="page-head">
+  <div>
+    <h1>{{ t('sub.title', n=sub.attempt, lab=lab.name) }}</h1>
+    <p class="subtitle">{{ t('sub.received_at', when=sub.created_at | localtime) }}
+      {% if sub.late %}· <span class="badge late">{{ t('sub.late', deadline=lab.due_at | localtime) }}</span>{% endif %}
+      {% if admin_view %}<br>{{ t('sub.student', email=sub.email) }}{% endif %}</p>
+  </div>
+</div>
+
+{% if pending %}
+<div class="result pending" role="status" data-poll data-announce="{{ t('sub.done_announce', result='RESULT') }}"><span class="spinner" aria-hidden="true"></span>{{ t('sub.checking') }}</div>
+<p class="muted mt-075">{{ t('sub.auto_refresh') }}</p>
+
+{% elif not show_result %}
+<section class="card accent">
+  <h2 class="card-title">{{ t('sub.receipt_title') }}</h2>
+  <p class="m-0">{{ t('report.receipt') }}</p>
+</section>
+{% if not sub.complete %}
+<p class="flash error">{{ t('sub.missing', files=sub.missing_files.splitlines() | join(', ')) }}</p>
+{% endif %}
+
+{% elif sub.status == 'error' %}
+<p class="flash error">{{ report.internal_error }}</p>
+
+{% else %}
+{% if sub.passed %}
+<div class="result ok"><span aria-hidden="true">✓</span>{{ t('sub.tests_passed') }}</div>
+<p class="muted explain">{{ t('sub.explain_passed') }}</p>
+{% else %}
+<div class="result fail"><span aria-hidden="true">✗</span>{{ t('sub.tests_failed') }}</div>
+<p class="muted explain">{{ t('sub.explain_failed') }}</p>
+{% endif %}
+{% if not sub.complete %}<p class="flash error">{{ t('sub.missing', files=sub.missing_files.splitlines() | join(', ')) }} {{ t('sub.explain_incomplete') }}</p>{% endif %}
+{% if not nav_admin and (not sub.passed or not sub.complete) %}
+<p><a class="btn" href="{{ url_for('lab', name=lab.name) }}">{{ t('sub.again') }}</a></p>
+{% endif %}
+<section class="card">
+  <h2 class="card-title">{{ t('sub.report') }}</h2>
+  {% for note in report.notes %}<p class="flash error">{{ note }}</p>{% endfor %}
+  {% if report.checks %}
+  <ul class="checks">
+    {% for ok, text in report.checks %}
+    <li class="{{ 'ok' if ok else 'fail' }}"><span class="mark" aria-hidden="true">{{ '✓' if ok else '✗' }}</span><span class="visually-hidden">{{ t('report.check_ok') if ok else t('report.check_fail') }}: </span><span>{{ text }}</span></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if report.errors.strip() %}
+  <h3 class="report-head">{{ t('report.errors') }}</h3>
+  <pre class="report">{{ report.errors }}</pre>
+  {% endif %}
+  {% if report.output.strip() %}
+  <details class="output">
+    <summary>{{ t('report.output') }}</summary>
+    <pre class="report">{{ report.output }}</pre>
+  </details>
+  {% endif %}
+  <p class="muted report-note">{{ t('sub.report_note') }}</p>
+</section>
+{% endif %}
+
+{% if nav_admin and sub.flags %}
+<p class="flash error"><b>{{ t('sub.flags') }}:</b> {{ t('sub.flags_text', words=sub.flags.splitlines() | join(', ')) }}</p>
+{% endif %}
+
+{% if files %}
+<section class="card">
+  <h2 class="card-title">{{ t('sub.files') }}</h2>
+  {% for f in files %}
+  <details class="srcfile" open>
+    <summary><code>{{ f.name }}</code> <span class="muted">{% if f.kind == 'text' %}{{ tn('sub.lines', f.lines) }}, {% endif %}{{ (f.size ~ ' B') if f.size < 1024 else ((f.size / 1024) | round(1) ~ ' KB') }}</span></summary>
+    {% if f.kind == 'text' %}
+    {{ code_view(f) }}
+    {% elif f.kind == 'image' %}
+    <a class="image-view" href="{{ url_for('admin_submission_image' if admin_view else 'submission_image', sub_id=sub.id, name=f.name) }}" title="{{ t('sub.image_open') }}"><img src="{{ url_for('admin_submission_image' if admin_view else 'submission_image', sub_id=sub.id, name=f.name) }}" alt="{{ t('sub.image_alt', name=f.name) }}" loading="lazy"></a>
+    {% elif f.kind == 'large' %}
+    <p class="muted src-note">{{ t('sub.too_large') }}</p>
+    {% else %}
+    <p class="muted src-note">{{ t('sub.binary') }}</p>
+    {% endif %}
+  </details>
+  {% endfor %}
+  {% if admin_view %}
+  <div class="toolbar-inline card-actions">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_submission_download', sub_id=sub.id) }}">{{ t('sub.zip_all') }}</a>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_lab_submissions', name=lab.name) }}">{{ t('sub.all_submissions') }}</a>
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if admin_view and lab_sources %}
+<section class="card">
+  <h2 class="card-title">{{ t('sub.testbench_title') }}</h2>
+  <p class="muted m-0">{{ t('sub.testbench_note') }}</p>
+  {% for src in lab_sources %}
+  <details class="srcfile" open>
+    <summary><b>{{ t(src.title) }}</b> <code>{{ src.view.name }}</code> <span class="muted">{{ tn('sub.lines', src.view.lines) }}</span></summary>
+    {{ code_view(src.view) }}
+  </details>
+  {% endfor %}
+  <div class="toolbar-inline card-actions">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_lab_edit', name=lab.name) }}">{{ t('sub.edit_lab') }}</a>
+  </div>
+</section>
+{% endif %}
+
+{% if admin_view and run %}
+<section class="card">
+  <h2 class="card-title">{{ t('sub.run_title') }}</h2>
+  <p class="muted">{{ t('sub.run_note') }}</p>
+  <dl class="facts">
+    <dt>{{ t('sub.run_finished') }}</dt><dd>{{ t('sub.run_yes') if sub.finished else t('sub.run_no') }}</dd>
+    <dt>{{ t('sub.run_timeout') }}</dt><dd>{{ t('sub.run_yes') if sub.timed_out else t('sub.run_no') }}</dd>
+    <dt>{{ t('sub.run_truncated') }}</dt><dd>{{ t('sub.run_yes') if sub.truncated else t('sub.run_no') }}</dd>
+    <dt>{{ t('sub.run_checks') }}</dt><dd>{{ t('sub.run_checks_value', ok=run.checks_ok, total=run.checks_total) }}</dd>
+  </dl>
+  <h3 class="report-head">{{ t('sub.run_checklist') }}</h3>
+  {% if run.checks %}<pre class="report">{% for ok, text in run.checks %}[{{ 'OK' if ok else 'FAIL' }}] {{ text }}{{ "\n" if not loop.last }}{% endfor %}</pre>{% else %}<p class="muted">{{ t('sub.run_checklist_empty') }}</p>{% endif %}
+  <h3 class="report-head">{{ t('sub.run_stdout') }}</h3>
+  {% if run.stdout %}<pre class="report">{{ run.stdout }}</pre>{% else %}<p class="muted">{{ t('sub.run_stdout_empty') }}</p>{% endif %}
+  <h3 class="report-head">{{ t('sub.run_stderr') }}</h3>
+  {% if run.stderr %}<pre class="report">{{ run.stderr }}</pre>{% else %}<p class="muted">{{ t('sub.run_empty') }}</p>{% endif %}
+</section>
+{% endif %}
+{% endblock %}

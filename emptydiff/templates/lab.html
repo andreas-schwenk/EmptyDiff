@@ -1,0 +1,74 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, student_help with context %}
+{% block title %}{{ lab.name }} · EmptyDiff{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('index') }}">{{ t('lab.back') }}</a>
+{% include "_hidden_banner.html" %}
+<div class="page-head">
+  <div>
+    <h1>{{ lab.name }}</h1>
+    {% if lab.description %}<p class="subtitle">{{ lab.description }}</p>{% endif %}
+  </div>
+</div>
+
+<div class="grid">
+  <section class="card accent">
+    <h2 class="card-title">{{ t('lab.task') }}</h2>
+    <dl class="facts">
+      <dt>{{ t('lab.deadline') }}</dt>
+      <dd>{{ lab.due_at | localtime }}<br>{% if overdue %}<small class="overdue">{{ t('lab.overdue_html') }}</small>{% else %}<small>{{ t('lab.late_note') }}</small>{% endif %}</dd>
+      <dt>{{ t('lab.files') }}</dt>
+      <dd>{% if required %}<span class="chips">{% for f in required %}<code class="chip">{{ f }}</code>{% endfor %}</span><small class="block">{{ t('lab.files_note') }}</small>{% else %}<span class="muted">{{ t('lab.files_none') }}</span>{% endif %}</dd>
+      {% if provided %}
+      <dt>{{ t('lab.provided') }}</dt>
+      <dd><span class="chips">{% for f in provided %}<code class="chip">{{ f }}</code>{% endfor %}</span><small class="block">{{ t('lab.provided_note') }}</small></dd>
+      {% endif %}
+      <dt>{{ t('lab.status') }}</dt>
+      <dd>{{ status_badge(subs[-1] if subs else none, lab) }}<br><small>{{ t('lab.status_note') }}</small></dd>
+      <dt>{{ t('lab.attempts') }}</dt>
+      <dd>{{ t('lab.attempts_value', used=subs|length, max=max_attempts) }}<br><small>{{ t('lab.attempts_note') }}</small></dd>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title"><span class="dot"></span>{{ t('lab.submit_title') }}</h2>
+    {% if subs|length >= max_attempts %}
+    <p class="flash error m-0">{{ t('lab.limit_reached_html', max=max_attempts, contact=contact_html()) }}</p>
+    {% else %}
+    <p class="muted">{{ t('lab.submit_hint_html') }}</p>
+    <form method="post" enctype="multipart/form-data" data-busy="{{ t('lab.uploading') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="dropzone" data-dropzone>
+        <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+        <span class="dz-title">{{ t('lab.drop_title') }}</span>
+        <span class="dz-hint">{{ t('lab.drop_hint') }}</span>
+        <input type="file" name="files" multiple required aria-label="{{ t('lab.choose_files') }}">
+      </label>
+      <ul class="file-list" data-file-list aria-live="polite"></ul>
+      <p class="muted drop-rules">{{ t('lab.drop_rules', mb=upload_mb) }}</p>
+      <div class="form-actions"><button type="submit">{{ t('lab.submit') }}</button></div>
+    </form>
+    {% endif %}
+  </section>
+</div>
+
+{{ student_help() }}
+{% if subs %}
+<section class="card">
+  <h2 class="card-title">{{ t('lab.history') }}</h2>
+  <ul class="history">
+    {% for s in subs|reverse %}
+    <li>
+      <a href="{{ url_for('submission', sub_id=s.id) }}"><b>{{ t('lab.submission', n=s.attempt) }}</b></a>
+      <span class="when">{{ s.created_at | localtime }}</span>
+      <span class="state">{{ status_badge(s, lab) }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

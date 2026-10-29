@@ -1,0 +1,15 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{% extends "base.html" %}
+{% block title %}{{ title }} · EmptyDiff{% endblock %}
+{% block content %}
+<div class="auth">
+  <div class="card">
+    <h1>{{ title }}</h1>
+    <p class="muted mt-075">{{ text }}</p>
+    <a class="btn btn-ghost" href="{{ url_for('index') }}">{{ t('error.home') }}</a>
+  </div>
+</div>
+{% endblock %}

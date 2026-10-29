@@ -1,0 +1,71 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}{{ t('adm.subs.title', lab=lab.name) }} · {{ t('adm.nav') }} · EmptyDiff{% endblock %}
+{% block head %}{% if pending %}<noscript><meta http-equiv="refresh" content="5"></noscript>{% endif %}{% endblock %}
+{% block content %}
+{% include "_admin_nav.html" %}
+<a class="back" href="{{ url_for('admin_index', open=lab.course, _anchor=lab.course) }}">{{ t('adm.back') }}</a>
+<div class="page-head">
+  <div>
+    <h1>{{ t('adm.subs.title', lab=lab.name) }}</h1>
+    <p class="subtitle">{{ t('adm.subs.subtitle', count=tn('adm.n_submissions', subs|length), deadline=lab.due_at | localtime) }}</p>
+  </div>
+  <div class="toolbar-inline">
+    {% if subs %}<a class="btn btn-ghost btn-sm" href="{{ url_for('admin_lab_archive', name=lab.name) }}" title="{{ t('form.archive_title') }}">{{ t('form.archive_zip') }}</a>{% endif %}
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_lab_edit', name=lab.name) }}">{{ t('adm.subs.edit_lab') }}</a>
+  </div>
+</div>
+<section class="card"{% if pending %} data-poll="list"{% endif %}>
+  {% if not subs %}
+  <p class="muted m-0">{{ t('adm.subs.empty') }}</p>
+  {% else %}
+  <p class="muted mt-0">{{ t('adm.subs.info_html', max=max_attempts) }}</p>
+  <div class="table-wrap">
+    <table class="cards">
+      <thead><tr><th scope="col">{{ t('adm.subs.student') }}</th><th scope="col">{{ t('adm.subs.nr') }}</th><th scope="col">{{ t('adm.subs.received') }}</th><th scope="col">{{ t('adm.subs.status') }}</th><th scope="col"></th></tr></thead>
+      {% macro status_cell(s) %}<td class="t-side">{{ status_badge(s, {'show_report': true}) }}{% if not s.complete and not s.passed %} <span class="badge fail" title="{{ s.missing_files.splitlines() | join(', ') }}">{{ t('adm.subs.incomplete') }}</span>{% endif %}{% if s.flags %} <span class="badge late" title="{{ t('adm.subs.flagged_title', words=s.flags.splitlines() | join(', ')) }}">{{ t('adm.subs.flagged') }}</span>{% endif %}</td>{% endmacro %}
+      {% macro actions_cell(s) %}
+        <td class="row-actions t-act"><div class="actions">
+          <a class="btn btn-ghost btn-sm" title="{{ t('adm.subs.view_title') }}" href="{{ url_for('admin_submission', sub_id=s.id) }}">{{ t('adm.subs.view') }}</a>
+          <a class="btn btn-ghost btn-sm" title="{{ t('adm.subs.zip_title') }}" href="{{ url_for('admin_submission_download', sub_id=s.id) }}">{{ t('adm.subs.zip') }}</a>
+          <form method="post" action="{{ url_for('admin_submission_regrade', sub_id=s.id) }}" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-ghost btn-sm" title="{{ t('adm.subs.regrade_title') }}">{{ t('adm.subs.regrade') }}</button>
+          </form>
+          <form method="post" action="{{ url_for('admin_submission_delete', sub_id=s.id) }}" class="inline" data-confirm="{{ t('adm.subs.delete_confirm', n=s.attempt, email=s.email) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-ghost btn-sm btn-danger-text">{{ t('adm.subs.delete') }}</button>
+          </form>
+        </div></td>
+      {% endmacro %}
+      {% for g in groups %}
+      {% set s = g.latest %}
+      <tbody class="group{% if g.older %} collapsed{% endif %}" id="{{ g.id }}">
+      <tr>
+        <td class="t-main">{{ g.email }} <small class="muted">{{ t('adm.subs.count', n=g.count, max=max_attempts) }}</small>{% if g.count >= max_attempts %} <span class="badge late" title="{{ t('adm.subs.limit_title') }}">{{ t('adm.subs.limit') }}</span>{% endif %}
+          {% if g.older %}<br><button type="button" class="group-toggle" data-group-toggle aria-expanded="false" aria-controls="{{ g.id }}">{{ tn('adm.subs.older', g.older|length) }}</button>{% endif %}</td>
+        <td data-label="{{ t('adm.subs.nr') }}" class="t-sub2">{{ s.attempt }}</td>
+        <td class="t-sub">{{ s.created_at | localtime }}</td>
+        {{ status_cell(s) }}
+        {{ actions_cell(s) }}
+      </tr>
+      {% for s in g.older %}
+      <tr class="older">
+        <td class="t-main"><span class="muted">{{ t('adm.subs.earlier') }}</span></td>
+        <td data-label="{{ t('adm.subs.nr') }}" class="t-sub2">{{ s.attempt }}</td>
+        <td class="t-sub">{{ s.created_at | localtime }}</td>
+        {{ status_cell(s) }}
+        {{ actions_cell(s) }}
+      </tr>
+      {% endfor %}
+      </tbody>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,18 @@
+# Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+# Created in part with AI help (Claude, Anthropic).
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+[Unit]
+Description=EmptyDiff: delete expired submissions and login data
+
+[Service]
+Type=oneshot
+User=emptydiff
+Group=emptydiff
+WorkingDirectory=@APP_DIR@
+Environment=PYTHONPATH=@APP_DIR@
+ExecStart=/usr/bin/python3 -m emptydiff purge
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=full

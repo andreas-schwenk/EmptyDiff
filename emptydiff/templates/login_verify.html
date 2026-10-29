@@ -1,0 +1,25 @@
+{#- Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+   Created in part with AI help (Claude, Anthropic).
+   SPDX-License-Identifier: GPL-3.0-or-later -#}
+
+{% extends "base.html" %}
+{% block title %}{{ t('verify.title') }} · EmptyDiff{% endblock %}
+{% block content %}
+<div class="auth">
+  <div class="card">
+    <div class="brand-mark">{% include "_brand_mark.html" %}</div>
+    <h1>{{ t('verify.title') }}</h1>
+    <p class="muted">{{ t('verify.intro_html', email=email, minutes=minutes) }}</p>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field">
+        <label for="code">{{ t('verify.code') }}</label>
+        <input id="code" type="text" name="code" class="code" required autofocus autocomplete="one-time-code" maxlength="20" spellcheck="false">
+      </div>
+      <button type="submit" class="btn-block">{{ t('verify.submit') }}</button>
+    </form>
+    <p class="center-note"><a href="{{ url_for('login') }}">{{ t('verify.again') }}</a></p>
+    <p class="muted cookie-note">{{ t('verify.help_html', contact=contact_html()) }}</p>
+  </div>
+</div>
+{% endblock %}

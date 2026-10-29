@@ -1,0 +1,16 @@
+_INPUT/
+
+/LOCAL.md
+.DS_Store
+__pycache__/
+*.pyc
+
+/data/
+/config.toml
+
+/_WEB/
+
+/slides/
+
+CLAUDE.md
+DESIGN.md
