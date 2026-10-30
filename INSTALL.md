@@ -4,7 +4,7 @@ EmptyDiff runs on a Debian server (tested on Debian 13) with Apache (`mod_wsgi`,
 
 ## Requirements
 
-- A Debian server with root access, reachable from the internet on ports **80 and 443** (for the certificate).
+- A Debian server with root access, reachable from the internet on ports **80 and 443** (for the certificate). If it is reachable only inside a network, see "Behind a reverse proxy" and "Plain HTTP for closed networks" below.
 - A DNS name that points to the server.
 - An SMTP server through which the server may send mail to the students (login codes).
 - Unprivileged user namespaces in the kernel (Debian default; `bubblewrap` needs them).
@@ -50,6 +50,38 @@ base_url = "http://192.0.2.10"
 **Login codes, session cookies and submissions travel unencrypted in this mode. Use it only in a closed, trusted network, never on the internet.** The installation prints a warning, disables Apache's default site (otherwise it would answer requests by IP address) and keeps everything else. Switching to https later means changing `base_url` and running `install.sh --accept-acme-terms` again.
 
 Without a mail server, request a code on the login page (it reports that the mail could not be sent but still opens the page for the code), then print the code with `python3 -m emptydiff issue-code <address>` (see Operation).
+
+## Under a path, behind a reverse proxy
+
+For a server that cannot get its own certificate (not reachable from the internet), another web server can serve it under a path of its own site, for example `https://pool.example.org/lab`: that site has the certificate, ends TLS and decides who may reach the path (for example only the campus network). EmptyDiff runs on a separate machine in the same network.
+
+**On the EmptyDiff server** (`/etc/emptydiff/config.toml`): `base_url` is the public address including the path (lower case letters, digits, `-`, `_`; one or more levels), and `[proxy]` lists the proxy's address:
+
+```toml
+base_url = "https://pool.example.org/lab"
+
+[proxy]
+addresses = ["192.0.2.20"]    # the reverse proxy (addresses or networks)
+```
+
+`install.sh` then installs Apache on port 80 only (no `mod_md`, no `--accept-acme-terms`), mounted at `/lab`. Everything below the path is answered **only to the proxy** (all other addresses get 403); close the firewall of this machine for everybody else as well. Cookies are limited to the path. The client address (for the limits on login codes) is taken from `X-Forwarded-For`, but only if the request comes from a proxy listed above: the last entry that is not a proxy counts, so a made-up header changes nothing. The Apache log of this server shows the address of the proxy.
+
+**On the proxy** (Apache with `mod_proxy`, `mod_proxy_http`; the site and its certificate already exist):
+
+```apache
+<Location "/lab">
+    # who may use it (for example the campus network)
+    Require ip 203.0.113.0/24 198.51.100.0/24
+    # the EmptyDiff server; the timeout is for large backups
+    ProxyPass        http://192.0.2.10/lab timeout=300
+    ProxyPassReverse http://192.0.2.10/lab
+    ProxyPreserveHost On
+</Location>
+```
+
+Apache does not allow comments behind a directive, only on lines of their own. Leave `ProxyAddHeaders` at its default (on): `mod_proxy` adds the client address to `X-Forwarded-For`. The hop between the two machines is plain http, so keep both in the same trusted network segment.
+
+Check from outside the allowed networks: `curl -I https://pool.example.org/lab/` must answer 403; from the proxy, `curl -I http://192.0.2.10/lab/healthz` must answer 200, from any other machine 403. If other applications with their own login run on the same host, they share the origin with EmptyDiff (a flaw in one can be used against the other): serve only static content there, or use a name of its own.
 
 ## Update
 

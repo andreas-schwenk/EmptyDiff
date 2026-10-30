@@ -7,7 +7,7 @@
 #
 #   First install:  git clone <repo> /opt/emptydiff && cd /opt/emptydiff && sudo ./install.sh --accept-acme-terms
 #   Update:         cd /opt/emptydiff && git pull && sudo ./install.sh --accept-acme-terms
-#   (With base_url = "http://..." in the configuration - closed networks only - the option is not needed.)
+#   (With base_url = "http://..." - closed networks only - or with proxy.addresses in the configuration the option is not needed.)
 #
 # The script rewrites the operational files (Apache, systemd, logrotate) from the templates in deploy/ every time.
 # It never touches: /etc/emptydiff/config.toml, /var/lib/emptydiff (database with labs, submissions).
@@ -101,16 +101,18 @@ install -m 0644 "$STAGE/logrotate/emptydiff" /etc/logrotate.d/emptydiff
 install -m 0644 "$STAGE/apache/emptydiff.conf" /etc/apache2/sites-available/emptydiff.conf
 
 say "Setting up Apache"
-# https (mod_md certificate) or, for closed networks, plain http: the generated site tells which
-if grep -q 'SSLEngine on' "$STAGE/apache/emptydiff.conf"; then
-  PLAIN_HTTP=0
-  a2enmod ssl md headers wsgi >/dev/null
-else
-  PLAIN_HTTP=1
-  a2enmod headers wsgi >/dev/null
-  # Apache's own default site would answer requests by IP address or an unknown name
-  a2dissite 000-default >/dev/null 2>&1 || true
-fi
+# https (mod_md certificate), plain http for closed networks, or behind a reverse proxy that ends TLS:
+# the generated site names its mode
+MODE="$(sed -n 's/^# mode: //p' "$STAGE/apache/emptydiff.conf")"
+case "$MODE" in
+  https) a2enmod ssl md headers wsgi >/dev/null ;;
+  http|proxy)
+    a2enmod headers wsgi >/dev/null
+    # Apache's own default site would answer requests by IP address or an unknown name
+    a2dissite 000-default >/dev/null 2>&1 || true
+    ;;
+  *) die "The generated Apache site does not name its mode." ;;
+esac
 a2ensite emptydiff >/dev/null
 apache2ctl configtest
 
@@ -139,8 +141,8 @@ else
   echo "Logs: journalctl -u emptydiff-worker -u emptydiff-purge; /var/log/apache2/emptydiff/error.log" >&2
   exit 2
 fi
-if [ "$PLAIN_HTTP" -eq 1 ]; then
-  echo "Warning: plain http (base_url starts with http://): login codes and cookies are not encrypted. Use this only in a closed, trusted network." >&2
-else
-  echo "The server must be reachable on ports 80 and 443 so that mod_md can issue the certificate."
-fi
+case "$MODE" in
+  http) echo "Warning: plain http (base_url starts with http://): login codes and cookies are not encrypted. Use this only in a closed, trusted network." >&2 ;;
+  proxy) echo "This server answers only the reverse proxy (proxy.addresses). Keep its firewall closed for everyone else; the proxy ends TLS and must restrict who may reach the path." ;;
+  *) echo "The server must be reachable on ports 80 and 443 so that mod_md can issue the certificate." ;;
+esac

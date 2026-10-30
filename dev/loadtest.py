@@ -74,7 +74,7 @@ def upload(url, cookie, csrf, lab, files):
     try:
         conn.request(
             "POST",
-            f"/lab/{lab}",
+            f"{parts.path.rstrip('/')}/lab/{lab}",
             body,
             {"Content-Type": ctype, "Cookie": f"session={cookie}"},
         )
@@ -121,7 +121,12 @@ def percentile(values, share):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--config", default=None)
-    ap.add_argument("--url", default="http://127.0.0.1")
+    ap.add_argument(
+        "--url",
+        default="http://127.0.0.1",
+        help="address of the server; with a path if the system is served "
+        "under one (http://127.0.0.1/lab)",
+    )
     ap.add_argument("--lab", required=True)
     ap.add_argument("--dir", help="the files to upload")
     ap.add_argument("--students", type=int, default=30)

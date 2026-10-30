@@ -291,7 +291,7 @@ class LoginTest(WebTestCase):
         )
         self.assertEqual(self.client.get("/").status_code, 302)
 
-    def test_a_mail_failure_still_opens_the_page_for_an_emergency_code(self):
+    def test_a_mail_failure_still_opens_the_code_page(self):
         with mock.patch.object(mail, "send", side_effect=mail.MailError("x")):
             resp = self.client.post(
                 "/login",
@@ -346,9 +346,10 @@ class LoginTest(WebTestCase):
         self.assertIn('<main id="main"', page)
         self.assertIn('<meta name="robots" content="noindex, nofollow">', page)
         self.assertIn(
-            'rel="apple-touch-icon" href="/apple-touch-icon.png?v=', page
+            'rel="apple-touch-icon" href="/static/apple-touch-icon.png?v=',
+            page,
         )
-        self.assertIn('href="/favicon.ico?v=', page)
+        self.assertIn('href="/static/favicon.ico?v=', page)
         self.assertIn(
             'role="status" aria-live="polite"', page
         )  # for announcing results
@@ -722,6 +723,94 @@ class CspTest(unittest.TestCase):
 
 class RememberTest(WebTestCase):
     COOKIE = "emptydiff_remember"
+
+    def test_under_a_path_links_and_cookies_stay_below_it(self):
+        add_lab(self.conn)
+        client = self.app.test_client()
+        base = "http://localhost/lab"
+        page = client.get("/login", base_url=base).get_data(as_text=True)
+        links = re.findall(r'(?:href|src|action)="(/[^"]*)"', page)
+        self.assertTrue(links)
+        for link in links:
+            self.assertTrue(link.startswith("/lab/"), link)
+        self.assertIn("/lab/static/style.css", page)
+        resp = client.get("/login", base_url=base)
+        self.assertTrue(
+            all("Path=/lab" in c for c in resp.headers.getlist("Set-Cookie"))
+        )
+        # redirects and the language switch keep the path
+        resp = client.get("/", base_url=base)
+        self.assertEqual(resp.headers["Location"], "/lab/login")
+        resp = client.get("/lang/en?next=/login", base_url=base)
+        self.assertEqual(resp.headers["Location"], "/lab/login")
+        # at the root nothing changes
+        resp = self.app.test_client().get("/lang/en?next=/login")
+        self.assertEqual(resp.headers["Location"], "/login")
+
+    def test_the_remember_cookie_is_limited_to_the_path_too(self):
+        add_lab(self.conn)
+        client = self.app.test_client()
+        base = "http://localhost/lab"
+        token = CSRF_RE.search(
+            client.get("/login", base_url=base).get_data(as_text=True)
+        ).group(1)
+        client.post(
+            "/login",
+            base_url=base,
+            data={"email": STUDENT, "csrf_token": token, "remember": "1"},
+        )
+        code = auth.issue_code(
+            self.conn, STUDENT, None, self.cfg["auth"]["code_ttl_minutes"]
+        )
+        token = CSRF_RE.search(
+            client.get("/login/verify", base_url=base).get_data(as_text=True)
+        ).group(1)
+        resp = client.post(
+            "/login/verify",
+            base_url=base,
+            data={"code": code, "csrf_token": token},
+        )
+        remember = [
+            c
+            for c in resp.headers.getlist("Set-Cookie")
+            if c.startswith(self.COOKIE)
+        ]
+        self.assertEqual(len(remember), 1)
+        self.assertIn("Path=/lab", remember[0])
+
+    def test_behind_the_proxy_limits_count_the_real_client(self):
+        from emptydiff.web import create_app
+
+        cfg = dict(self.cfg, base_url="https://pool.school.invalid/lab")
+        cfg["proxy"] = {"addresses": ["10.9.8.7"]}
+        cfg["auth"] = dict(cfg["auth"], max_codes_per_ip_hour=1)
+        cfg["auth"]["code_cooldown_seconds"] = 0
+        app = create_app(cfg)
+        client = app.test_client()
+
+        def request_code(email, forwarded, remote="10.9.8.7"):
+            """True if a mail with a code was sent."""
+            token = CSRF_RE.search(
+                client.get("/login").get_data(as_text=True)
+            ).group(1)
+            with mock.patch.object(mail, "send") as send:
+                client.post(
+                    "/login",
+                    data={"email": email, "csrf_token": token},
+                    headers={"X-Forwarded-For": forwarded},
+                    environ_overrides={"REMOTE_ADDR": remote},
+                )
+            return send.called
+
+        self.assertTrue(request_code(STUDENT, "203.0.113.1"))
+        # another client behind the same proxy has its own allowance
+        self.assertTrue(request_code(OTHER, "203.0.113.2"))
+        # the first client may not ask again within the hour
+        self.assertFalse(request_code(STUDENT, "203.0.113.1"))
+        # a made-up header from someone who is not the proxy is ignored:
+        # that client counts with its own address
+        self.assertTrue(request_code(STUDENT, "203.0.113.77", "192.0.2.5"))
+        self.assertFalse(request_code(OTHER, "203.0.113.78", "192.0.2.5"))
 
     def test_cookies_are_secure_only_over_https(self):
         from emptydiff.core import config

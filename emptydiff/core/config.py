@@ -6,8 +6,11 @@
 only."""
 
 import copy
+import ipaddress
 import os
+import re
 import tomllib
+from urllib.parse import urlsplit
 
 from . import i18n, languages
 
@@ -93,6 +96,14 @@ DEFAULTS = {
     # for tampering with the check or reading it). The defaults come
     # from the language adapters.
     "languages": languages.defaults(),
+    "proxy": {
+        # Addresses or networks of the reverse proxy in front of this
+        # server (it ends TLS and may serve the system under a path of
+        # its own site). Empty: no proxy. Only a request from one of
+        # these addresses may carry the client address in
+        # X-Forwarded-For.
+        "addresses": [],
+    },
     "limits": {
         "max_upload_bytes": 5_000_000,
         "max_attempts": 7,
@@ -229,6 +240,7 @@ def _validate(cfg):
                 f"languages.{language}.suspicious_words: list of "
                 "non-empty strings expected"
             )
+    _validate_proxy(cfg)
     sandbox = cfg["grader"]["sandbox"]
     if sandbox not in ("bwrap", "none"):
         raise ConfigError(f"grader.sandbox: unknown value {sandbox!r}")
@@ -236,6 +248,75 @@ def _validate(cfg):
         raise ConfigError(
             "grader.sandbox = 'none' is only allowed with EMPTYDIFF_DEV=1"
         )
+
+
+URL_PREFIX_RE = re.compile(r"^/[a-z0-9][a-z0-9_-]*(/[a-z0-9][a-z0-9_-]*)*$")
+
+
+def url_prefix(cfg):
+    """The path of `base_url` without a trailing slash ("" at the root,
+    "/lab" when the system is served under a path of its site)."""
+    return urlsplit(str(cfg["base_url"])).path.rstrip("/")
+
+
+def proxy_networks(cfg):
+    """The networks of the reverse proxy (empty without a proxy)."""
+    return [
+        ipaddress.ip_network(a, strict=False)
+        for a in cfg["proxy"]["addresses"]
+    ]
+
+
+def _validate_proxy(cfg):
+    addresses = cfg["proxy"]["addresses"]
+    if not isinstance(addresses, list) or not all(
+        isinstance(a, str) for a in addresses
+    ):
+        raise ConfigError("proxy.addresses: list of strings expected")
+    for address in addresses:
+        try:
+            ipaddress.ip_network(address.strip(), strict=False)
+        except ValueError:
+            raise ConfigError(
+                f"proxy.addresses: {address!r} is not an IP address or "
+                "network"
+            ) from None
+    cfg["proxy"]["addresses"] = [a.strip() for a in addresses]
+    if addresses and not uses_https(cfg):
+        raise ConfigError(
+            "proxy.addresses: with a reverse proxy, base_url is the "
+            "public https address that the proxy serves"
+        )
+    prefix = url_prefix(cfg)
+    if prefix and not URL_PREFIX_RE.match(prefix):
+        raise ConfigError(
+            f"base_url: the path {prefix!r} is not valid (lower case "
+            "letters, digits, - and _, for example /lab)"
+        )
+
+
+def client_address(cfg, remote_addr, forwarded_for=""):
+    """The address of the client. Behind the configured reverse proxy
+    it is the last entry of X-Forwarded-For that is not itself a proxy;
+    anything else is ignored, because everyone can send the header."""
+    networks = proxy_networks(cfg)
+
+    def is_proxy(text):
+        try:
+            address = ipaddress.ip_address(text.strip())
+        except ValueError:
+            return None
+        return any(address in net for net in networks)
+
+    if not networks or not is_proxy(remote_addr or ""):
+        return remote_addr
+    for entry in reversed((forwarded_for or "").split(",")):
+        verdict = is_proxy(entry)
+        if verdict is None:  # not an address: do not trust the header
+            return remote_addr
+        if not verdict:
+            return entry.strip()
+    return remote_addr
 
 
 def contact_hint(cfg):

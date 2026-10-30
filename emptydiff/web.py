@@ -33,6 +33,7 @@ from flask import (
     session,
     url_for,
 )
+from flask.sessions import SecureCookieSessionInterface
 
 from .core import (
     archive,
@@ -70,6 +71,19 @@ def _load_secret_key(data_dir):
 
 
 REMEMBER_COOKIE = "emptydiff_remember"
+
+
+class PathSessionInterface(SecureCookieSessionInterface):
+    """The session cookie is valid only under the path the system is
+    served at (for example /lab), so that it never reaches other
+    applications on the same host."""
+
+    def get_cookie_path(self, app):
+        return request.script_root or "/"
+
+
+def cookie_path():
+    return request.script_root or "/"
 
 
 BACKUP_FORM_OVERHEAD = 1_000_000
@@ -124,6 +138,7 @@ def create_app(cfg=None):
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
     secure_cookies = not dev and config_module.uses_https(cfg)
     app.config["SESSION_COOKIE_SECURE"] = secure_cookies
+    app.session_interface = PathSessionInterface()
     remember_days = cfg["auth"]["remember_days"]
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(
         hours=cfg["auth"]["session_hours"]
@@ -276,7 +291,7 @@ def create_app(cfg=None):
     @app.after_request
     def security_headers(resp):
         if g.get("forget_remember"):
-            resp.delete_cookie(REMEMBER_COOKIE)
+            resp.delete_cookie(REMEMBER_COOKIE, path=cookie_path())
         resp.headers.setdefault("X-Content-Type-Options", "nosniff")
         resp.headers.setdefault("Referrer-Policy", "same-origin")
         resp.headers.setdefault(
@@ -335,7 +350,7 @@ def create_app(cfg=None):
         back = request.args.get("next", "/")
         if not back.startswith("/") or back.startswith("//") or "\\" in back:
             back = "/"
-        return redirect(back)
+        return redirect(request.script_root + back)
 
     # ---------- Login ----------
 
@@ -365,7 +380,11 @@ def create_app(cfg=None):
                 code = auth.issue_code(
                     conn,
                     email,
-                    request.remote_addr,
+                    config_module.client_address(
+                        cfg,
+                        request.remote_addr,
+                        request.headers.get("X-Forwarded-For", ""),
+                    ),
                     ttl,
                     per_email=limits["max_codes_per_email_hour"],
                     per_ip=limits["max_codes_per_ip_hour"],
@@ -424,6 +443,7 @@ def create_app(cfg=None):
                         httponly=True,
                         samesite="Lax",
                         secure=secure_cookies,
+                        path=cookie_path(),
                     )
                 return resp
             flash(t("flash.bad_code"), "error")
@@ -444,7 +464,7 @@ def create_app(cfg=None):
         if chosen:
             session["lang"] = chosen
         resp = redirect(url_for("login"))
-        resp.delete_cookie(REMEMBER_COOKIE)
+        resp.delete_cookie(REMEMBER_COOKIE, path=cookie_path())
         return resp
 
     # ---------- Operations ----------

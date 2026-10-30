@@ -11,8 +11,8 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#ff8a00">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg', v=icon_version) }}">
-  <link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="/favicon.ico?v={{ icon_version }}">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v={{ icon_version }}">
+  <link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="{{ url_for('static', filename='favicon.ico', v=icon_version) }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png', v=icon_version) }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <script src="{{ url_for('static', filename='app.js') }}" defer></script>
   {% block head %}{% endblock %}

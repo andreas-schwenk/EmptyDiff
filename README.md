@@ -23,7 +23,7 @@ check_close(addone([1 2]), [2 3], 1e-12, 'works for vectors', 'wrong for vectors
 
 ## Requirements
 
-A Debian 13 server with root access, ports 80 and 443 reachable from the internet, a DNS name, an SMTP server for the login mails, and unprivileged user namespaces in the kernel (Debian default).
+A Debian 13 server with root access, ports 80 and 443 reachable from the internet (or a reverse proxy that serves it under a path, see INSTALL.md), a DNS name, an SMTP server for the login mails, and unprivileged user namespaces in the kernel (Debian default).
 
 Everything comes from Debian packages, there is no `pip`, no Node and no CDN:
 

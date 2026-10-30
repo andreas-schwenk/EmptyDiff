@@ -35,7 +35,11 @@ OUTPUTS = {
 MOUNT_TEMPLATE = "emptydiff-run.mount.in"
 # Apache has one variant per URL scheme; the directives both share live
 # in one file that is inserted at @VHOST_BODY@
-APACHE_TEMPLATE = {"https": "apache.conf.in", "http": "apache-http.conf.in"}
+APACHE_TEMPLATE = {
+    "https": "apache.conf.in",
+    "http": "apache-http.conf.in",
+    "proxy": "apache-proxy.conf.in",
+}
 VHOST_BODY_TEMPLATE = "apache-vhost.in"
 
 HOST_RE = re.compile(
@@ -120,30 +124,37 @@ def values(cfg, app_dir, accept_acme_terms=False):
     url = urlsplit(cfg["base_url"])
     host = (url.hostname or "").lower()
     scheme = url.scheme
+    proxies = cfg["proxy"]["addresses"]
     if scheme == "https":
         host_ok = (
             bool(HOST_RE.match(host)) and not host.rpartition(".")[2].isdigit()
         )  # IP addresses do not get an ACME certificate
-        form = "https://<hostname>"
-    elif scheme == "http":
+        form = "https://<hostname>[/path]"
+    elif scheme == "http" and not proxies:
         host_ok = bool(HTTP_HOST_RE.match(host)) and (
             not host.rpartition(".")[2].isdigit() or _is_ipv4(host)
         )
-        form = "http://<hostname or IPv4 address> (closed networks only)"
+        form = (
+            "http://<hostname or IPv4 address>[/path] (closed networks only)"
+        )
     else:
-        host_ok, form = False, "https://<hostname>"
+        host_ok, form = False, "https://<hostname>[/path]"
+    prefix = url.path.rstrip("/")
     if (
         not host_ok
-        or url.path not in ("", "/")
+        or (prefix and not config.URL_PREFIX_RE.match(prefix))
         or url.port
         or url.query
         or url.fragment
+        or "//" in url.path
     ):
         raise DeployError(
             f"base_url must have the form {form} "
-            f"(without path and port), not {cfg['base_url']!r}"
+            f"(without port; the path is optional, for example /lab), "
+            f"not {cfg['base_url']!r}"
         )
-    if scheme == "https" and not accept_acme_terms:
+    mode = "proxy" if proxies else scheme
+    if mode == "https" and not accept_acme_terms:
         raise DeployError(
             "The terms of service of the certificate authority "
             "(ACME, e.g. Let's Encrypt) must be "
@@ -178,8 +189,11 @@ def values(cfg, app_dir, accept_acme_terms=False):
             + "). Please fill in /etc/emptydiff/config.toml."
         )
     return {
-        "SCHEME": scheme,
+        "MODE": mode,
         "HOST": host,
+        "PREFIX": prefix,  # "" or "/lab"
+        "MOUNT": prefix or "/",
+        "PROXY_ADDRESSES": " ".join(proxies),
         "ADMIN_EMAIL": admin,
         "APP_DIR": app_dir.rstrip("/"),
         "DATA_DIR": data_dir,
@@ -217,7 +231,7 @@ def render(cfg, app_dir, out_dir, accept_acme_terms=False, template_dir=None):
         MOUNT_TEMPLATE: "systemd/"
         + mount_unit_name(vals["DATA_DIR"] + "/run"),
     }
-    apache = APACHE_TEMPLATE[vals["SCHEME"]]
+    apache = APACHE_TEMPLATE[vals["MODE"]]
     outputs[apache] = outputs.pop("apache.conf.in")
     for template, target in outputs.items():
         text = _read(template_dir, template)

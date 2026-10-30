@@ -2,19 +2,20 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# EmptyDiff: directives shared by both Apache variants (https and plain
-# http); deploy.py inserts this file into apache.conf.in or
-# apache-http.conf.in at @VHOST_BODY@. It is not installed by itself.
+# EmptyDiff: directives shared by all Apache variants (https, plain
+# http, behind a proxy); deploy.py inserts this file into the site at
+# @VHOST_BODY@. It is not installed by itself. @PREFIX@ is empty or the
+# path of base_url (for example /lab), @MOUNT@ is that path or "/".
     # Upload size: the application's upper limit plus room for the multipart overhead
     LimitRequestBody @MAX_BODY@
     # Restoring a backup (admins only): larger files allowed
-    <Location "/admin/backup/upload">
+    <Location "@PREFIX@/admin/backup/upload">
         LimitRequestBody @MAX_BACKUP_BODY@
     </Location>
 
     WSGIDaemonProcess emptydiff user=emptydiff group=emptydiff processes=2 threads=4 python-path=@APP_DIR@ display-name=%{GROUP}
     WSGIProcessGroup emptydiff
-    WSGIScriptAlias / @APP_DIR@/emptydiff/wsgi.py
+    WSGIScriptAlias @MOUNT@ @APP_DIR@/emptydiff/wsgi.py
 
     <Directory @APP_DIR@/emptydiff>
         <Files wsgi.py>
@@ -23,7 +24,7 @@
     </Directory>
 
     # Static files directly from Apache
-    Alias /static/ @APP_DIR@/emptydiff/static/
+    Alias @PREFIX@/static/ @APP_DIR@/emptydiff/static/
     <Directory @APP_DIR@/emptydiff/static>
         Require all granted
         Header set Cache-Control "public, max-age=3600"

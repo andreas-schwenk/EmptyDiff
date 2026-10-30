@@ -11,6 +11,8 @@
 # codes and session cookies travel unencrypted. There is no certificate
 # and no redirect to https.
 
+# mode: http
+
 <VirtualHost *:80>
     ServerName @HOST@
     ServerSignature Off

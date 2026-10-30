@@ -70,6 +70,84 @@ class ConfigTest(unittest.TestCase):
             with self.subTest(url=url):
                 self.assertIs(config.uses_https({"base_url": url}), expected)
 
+    def test_proxy_addresses_are_validated(self):
+        base = 'base_url = "https://host.school.invalid/lab"\n'
+        cfg = config.load(
+            _write(
+                base + '[proxy]\naddresses = ["192.0.2.20", " 10.0.0.0/8 "]'
+            )
+        )
+        self.assertEqual(
+            cfg["proxy"]["addresses"], ["192.0.2.20", "10.0.0.0/8"]
+        )
+        self.assertEqual(config.load(_write(base))["proxy"]["addresses"], [])
+        for bad in (
+            '["host.example"]',
+            '"192.0.2.20"',
+            "[1]",
+            '["300.1.1.1"]',
+        ):
+            with self.subTest(bad=bad), self.assertRaises(config.ConfigError):
+                config.load(_write(base + f"[proxy]\naddresses = {bad}"))
+        with self.assertRaises(
+            config.ConfigError
+        ):  # the public address is https
+            config.load(
+                _write(
+                    'base_url = "http://host.school.invalid"\n'
+                    '[proxy]\naddresses = ["192.0.2.20"]'
+                )
+            )
+
+    def test_base_url_path_is_the_url_prefix(self):
+        for url, prefix in (
+            ("https://h.school.invalid", ""),
+            ("https://h.school.invalid/", ""),
+            ("https://h.school.invalid/lab", "/lab"),
+            ("https://h.school.invalid/lab/", "/lab"),
+            ("https://h.school.invalid/a/b-c_d", "/a/b-c_d"),
+        ):
+            with self.subTest(url=url):
+                cfg = config.load(_write(f'base_url = "{url}"'))
+                self.assertEqual(config.url_prefix(cfg), prefix)
+        for bad in ("/Lab", "/a b", "/a//b", "/..", "/-x"):
+            with self.subTest(bad=bad), self.assertRaises(config.ConfigError):
+                config.load(
+                    _write(f'base_url = "https://h.school.invalid{bad}"')
+                )
+
+    def test_client_address_is_taken_from_the_header_only_behind_the_proxy(
+        self,
+    ):
+        cfg = config.load(
+            _write(
+                'base_url = "https://h.school.invalid/lab"\n'
+                '[proxy]\naddresses = ["192.0.2.20", "198.51.100.0/24"]'
+            )
+        )
+
+        def ca(remote, header=""):
+            return config.client_address(cfg, remote, header)
+
+        self.assertEqual(ca("192.0.2.20", "203.0.113.9"), "203.0.113.9")
+        # a client that sends its own header: the proxy appends the
+        # real address, which stands last
+        self.assertEqual(
+            ca("192.0.2.20", "1.1.1.1, 203.0.113.9"), "203.0.113.9"
+        )
+        self.assertEqual(
+            ca("192.0.2.20", "203.0.113.9, 198.51.100.7"), "203.0.113.9"
+        )  # a second proxy in the chain is skipped
+        self.assertEqual(ca("192.0.2.20", ""), "192.0.2.20")
+        self.assertEqual(ca("192.0.2.20", "not an address"), "192.0.2.20")
+        # not from the proxy: the header is just a claim
+        self.assertEqual(ca("203.0.113.50", "1.1.1.1"), "203.0.113.50")
+        self.assertEqual(ca(None, "1.1.1.1"), None)
+        plain = config.load(_write('base_url = "https://h.school.invalid"'))
+        self.assertEqual(
+            config.client_address(plain, "192.0.2.20", "1.1.1.1"), "192.0.2.20"
+        )
+
     def test_login_limits_have_defaults_and_are_validated(self):
         auth = config.DEFAULTS["auth"]
         self.assertEqual(

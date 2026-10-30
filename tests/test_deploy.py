@@ -203,7 +203,11 @@ class RenderTest(DeployTestCase):
         for bad in (
             "ftp://emptydiff.school.invalid",
             "emptydiff.school.invalid",
-            "https://emptydiff.school.invalid/app",
+            "https://emptydiff.school.invalid/App",
+            "https://emptydiff.school.invalid/a b",
+            "https://emptydiff.school.invalid/a//b",
+            "https://emptydiff.school.invalid/..",
+            "https://emptydiff.school.invalid/app?x=1",
             "https://localhost",
             "https://10.0.0.5",
             "https://emptydiff.school.invalid:8443",
@@ -226,7 +230,8 @@ class RenderTest(DeployTestCase):
 
     def test_invalid_plain_http_base_urls_are_rejected(self):
         for bad in (
-            "http://emptydiff.school.invalid/app",
+            "http://emptydiff.school.invalid/App",
+            "http://emptydiff.school.invalid/a//b",
             "http://emptydiff.school.invalid:8080",
             "http://192.0.2.10:8080",
             "http://999.1.1.1",
@@ -273,6 +278,74 @@ class RenderTest(DeployTestCase):
                     self.assertIn(line, conf)
                 self.assertEqual(conf.count("WSGIScriptAlias"), 1)
                 self.assertNotIn("shared by both", conf)
+
+    def test_base_url_path_is_the_mount_point_of_the_application(self):
+        for url in (
+            "https://emptydiff.school.invalid/lab",
+            "https://emptydiff.school.invalid/lab/",
+        ):
+            with self.subTest(url=url):
+                self.render(prod_cfg(base_url=url))
+                conf = self.read("apache/emptydiff.conf")
+                self.assertIn(
+                    "WSGIScriptAlias /lab /opt/emptydiff/emptydiff/wsgi.py",
+                    conf,
+                )
+                self.assertIn(
+                    "Alias /lab/static/ /opt/emptydiff/emptydiff/static/",
+                    conf,
+                )
+                self.assertIn('<Location "/lab/admin/backup/upload">', conf)
+        self.render()
+        conf = self.read("apache/emptydiff.conf")
+        self.assertIn("WSGIScriptAlias / /opt/emptydiff", conf)
+        self.assertIn("Alias /static/ /opt/emptydiff", conf)
+        self.assertIn('<Location "/admin/backup/upload">', conf)
+
+    def proxy_cfg(self, **over):
+        cfg = prod_cfg(base_url="https://pool.school.invalid/lab", **over)
+        cfg["proxy"]["addresses"] = ["192.0.2.20", "198.51.100.0/24"]
+        return cfg
+
+    def test_behind_a_proxy_only_the_proxy_is_answered_over_plain_http(self):
+        self.render(self.proxy_cfg(), accept_acme_terms=False)
+        conf = self.read("apache/emptydiff.conf")
+        self.assertIn("<VirtualHost *:80>", conf)
+        self.assertIn("ServerName pool.school.invalid", conf)
+        self.assertRegex(
+            conf,
+            r'<Location "/">\s+Require ip 192\.0\.2\.20 198\.51\.100\.0/24'
+            r"\s+</Location>",
+        )
+        self.assertIn("WSGIScriptAlias /lab ", conf)
+        self.assertIn("Alias /lab/static/ ", conf)
+        for tls in (
+            ":443",
+            "SSLEngine",
+            "MDomain",
+            "MDCertificateAgreement",
+            "Strict-Transport-Security",
+        ):
+            self.assertNotIn(tls, conf)
+
+    def test_the_apache_site_names_its_mode_for_install_sh(self):
+        for cfg, acme, mode in (
+            (prod_cfg(), True, "https"),
+            (prod_cfg(base_url="http://192.0.2.10"), False, "http"),
+            (self.proxy_cfg(), False, "proxy"),
+        ):
+            with self.subTest(mode=mode):
+                self.render(cfg, accept_acme_terms=acme)
+                self.assertRegex(
+                    self.read("apache/emptydiff.conf"),
+                    rf"(?m)^# mode: {mode}$",
+                )
+
+    def test_behind_a_proxy_the_public_address_is_https(self):
+        cfg = self.proxy_cfg()
+        cfg["base_url"] = "http://pool.school.invalid/lab"
+        with self.assertRaises(deploy.DeployError):
+            self.render(cfg, accept_acme_terms=False)
 
     def test_unedited_template_values_are_rejected(self):
         for key, value in (("base_url", "https://emptydiff.example.org"),):

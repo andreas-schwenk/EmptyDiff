@@ -43,6 +43,12 @@ backend = "simulate"        # only with EMPTYDIFF_DEV=1; "smtp" in production
 sandbox = "bwrap"           # "none" only with EMPTYDIFF_DEV=1 (e.g. natively on macOS)
 # batch_size = 10            # submissions fetched per round; they are always graded one after another
 
+[proxy]
+# Behind a reverse proxy that ends TLS (for example an Apache on another machine that serves the system
+# under a path like https://pool.example.org/lab, only for the campus network): the proxy's addresses.
+# Then base_url is the public https address including the path; see INSTALL.md.
+# addresses = ["192.0.2.20"]
+
 [languages]
 enabled = ["octave"]        # the programming languages this server offers (install.sh installs their packages)
 # One section per language; the defaults come from the language adapters in emptydiff/core/languages/.

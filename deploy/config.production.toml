@@ -17,6 +17,11 @@ base_url = "https://emptydiff.example.org"   # public name of the server (https,
 allowed_domains = ["student.example.edu", "example.edu"]   # who may log in (exact domains)
 admins = ["dozent@example.edu"]                            # lecturers/supervisors; the first address receives ACME notices
 
+[proxy]
+# Behind a reverse proxy that ends TLS: its address(es). base_url is then the public https address with the path
+# (for example https://pool.example.org/lab); this server answers only the proxy. See INSTALL.md.
+# addresses = ["192.0.2.20"]
+
 [languages]
 # enabled = ["octave"]      # the programming languages this server offers (install.sh installs their packages)
 
