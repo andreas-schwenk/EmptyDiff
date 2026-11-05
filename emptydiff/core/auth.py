@@ -40,11 +40,15 @@ class AuthError(i18n.LocalizedError):
     translated)."""
 
 
-def normalize_email(raw, allowed_domains):
+def normalize_email(raw, allowed_domains, admins=()):
     """The address in lower case (the only form that is stored and
-    compared), or AuthError."""
+    compared), or AuthError. An address listed in `admins` may log in
+    even if its domain is not among the allowed ones (lecturers often
+    have another domain than students)."""
     email = (raw or "").strip().lower()
     match = EMAIL_RE.match(email)
+    if match and email in {a.strip().lower() for a in admins}:
+        return email
     if not match or match.group(1) not in {d.lower() for d in allowed_domains}:
         domains = ", ".join("@" + d for d in allowed_domains)
         raise AuthError("err.auth.domain", domains=domains)

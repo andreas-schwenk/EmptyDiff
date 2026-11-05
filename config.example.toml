@@ -15,7 +15,7 @@ base_url = "http://127.0.0.1:8091"
 
 [auth]
 allowed_domains = ["student.example.edu", "example.edu"]   # domains of the mail addresses that may log in
-admins = ["dozent@example.edu"]                            # lecturers/supervisors (administration area)
+admins = ["dozent@example.edu"]                            # lecturers/supervisors (administration area); may log in even if their domain is not listed above
 # Limits for requesting a login code (defaults shown; not for entering the code, not for uploads):
 # max_codes_per_email_hour = 8
 # max_codes_per_ip_hour = 200     # a whole computer room can sit behind one address

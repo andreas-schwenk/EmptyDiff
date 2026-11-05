@@ -373,7 +373,9 @@ def create_app(cfg=None):
                 return redirect(url_for("login"))
             try:
                 email = auth.normalize_email(
-                    request.form.get("email"), cfg["auth"]["allowed_domains"]
+                    request.form.get("email"),
+                    cfg["auth"]["allowed_domains"],
+                    admins,
                 )
                 ttl = cfg["auth"]["code_ttl_minutes"]
                 limits = cfg["auth"]

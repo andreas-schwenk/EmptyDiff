@@ -36,6 +36,18 @@ class NormalizeTest(unittest.TestCase):
             "a@example.edu",
         )
 
+    def test_admins_may_log_in_from_any_domain(self):
+        admins = ["Dozent@staff.example.net"]
+        self.assertEqual(
+            auth.normalize_email(" dozent@STAFF.example.net", DOMAINS, admins),
+            "dozent@staff.example.net",
+        )
+        # only the listed address, not its whole domain
+        for email in ("other@staff.example.net", "dozent@staff.example.com"):
+            with self.subTest(email=email):
+                with self.assertRaises(auth.AuthError):
+                    auth.normalize_email(email, DOMAINS, admins)
+
     def test_rejects_other_or_tricky_domains(self):
         for email in (
             "a@gmail.com",

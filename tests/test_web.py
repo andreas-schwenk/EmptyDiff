@@ -217,6 +217,23 @@ class LoginTest(WebTestCase):
         self.assertIn("Praktikumsversuche", resp.get_data(as_text=True))
         self.assertIn(STUDENT, resp.get_data(as_text=True))
 
+    def test_admin_from_another_domain_gets_a_code(self):
+        from emptydiff.web import create_app
+
+        staff = "dozent@staff.example.net"
+        self.cfg["auth"]["admins"].append(staff)
+        client = create_app(self.cfg).test_client()
+        resp = client.post(
+            "/login",
+            data={"email": staff, "csrf_token": self.token(client)},
+            follow_redirects=True,
+        )
+        self.assertIn(staff, resp.get_data(as_text=True))
+        self.assertEqual(
+            self.conn.execute("SELECT COUNT(*) FROM login_code").fetchone()[0],
+            1,
+        )
+
     def test_foreign_domain_is_rejected_without_mail(self):
         resp = self.client.post(
             "/login",

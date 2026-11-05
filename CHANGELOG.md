@@ -12,6 +12,7 @@ First version, a rewrite of an older mail-based submission system.
 - **Under a path, behind a proxy:** `base_url` may contain a path (`https://pool.example.org/lab`); with `[proxy] addresses` the server answers only a reverse proxy that ends TLS, takes the client address from `X-Forwarded-For` (only from that proxy) and limits its cookies to the path.
 - **Operation tools:** `dev/loadtest.py` simulates many students uploading at once on a running installation and reports upload times, throughput and failures. If the mail with a login code cannot be sent, the login page still opens the page for the code, so that a code printed with `issue-code` can be entered.
 - **Robust checks:** if bubblewrap itself does not start (for example because no process can be created at that moment), the worker repeats the check up to three times and otherwise stores an error; a submission is never rated "not passed" because of a sandbox that did not start.
+- **Lecturer login:** an address listed in `auth.admins` may log in even if its domain is not in `auth.allowed_domains` (only that exact address, not its domain).
 - **Code style:** the Python source follows PEP 8 (79 columns, comments and docstrings 72), formatted with black and checked with pycodestyle (`dev/docker.sh lint` and `format`).
 - **Accessibility and design:** high contrast, square flat design, skip link, live announcement of results, no external resources, `noindex`.
 

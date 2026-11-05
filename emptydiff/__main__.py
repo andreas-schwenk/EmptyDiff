@@ -230,7 +230,7 @@ def cmd_issue_code(args):
     conn = _open_db(cfg)
     try:
         email = auth.normalize_email(
-            args.email, cfg["auth"]["allowed_domains"]
+            args.email, cfg["auth"]["allowed_domains"], cfg["auth"]["admins"]
         )
         print(
             auth.issue_code(conn, email, None, cfg["auth"]["code_ttl_minutes"])
