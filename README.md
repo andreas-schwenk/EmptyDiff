@@ -1,8 +1,10 @@
 # EmptyDiff
 
+Website: <https://andreas-schwenk.github.io/EmptyDiff/> ([English](https://andreas-schwenk.github.io/EmptyDiff/), [Deutsch](https://andreas-schwenk.github.io/EmptyDiff/de.html))
+
 EmptyDiff is a small, self-hosted web application for programming lab courses. Students log in with a one-time code sent to their institutional email address, upload their program files, and get an automatic check within seconds. Currently Octave/MATLAB (`.m` files) is supported; the design leaves room for other languages. Lecturers set up the labs, follow the submissions and export the results.
 
-It replaces an older mail-based submission system from 2015 and is built to be simple to run and easy to understand: few dependencies, one configuration file, one SQLite database.
+It is built to be simple to run and easy to understand: few dependencies, one configuration file, one SQLite database.
 
 > Status: alpha. Not yet used in production.
 
@@ -23,9 +25,9 @@ check_close(addone([1 2]), [2 3], 1e-12, 'works for vectors', 'wrong for vectors
 
 ## Requirements
 
-A Debian 13 server with root access, ports 80 and 443 reachable from the internet (or a reverse proxy that serves it under a path, see INSTALL.md), a DNS name, an SMTP server for the login mails, and unprivileged user namespaces in the kernel (Debian default).
+A Linux server with root access and `apt` (Debian or Ubuntu recommended; tested so far only with Debian 13, Ubuntu needs Python 3.11 or newer), a DNS name with ports 80 and 443 reachable from the internet for the certificate, an SMTP server for the login mails, and unprivileged user namespaces in the kernel (Debian default; on Ubuntu 24.04 AppArmor can restrict them, the self-test of `install.sh` shows whether the sandbox works). Without a public name the system can run in plain HTTP mode in a closed network or behind a reverse proxy that serves it under a path of its site (both in INSTALL.md).
 
-Everything comes from Debian packages, there is no `pip`, no Node and no CDN:
+Everything comes from distribution packages, there is no `pip`, no Node and no CDN:
 
 - Apache with `mod_wsgi` (certificates through `mod_md`)
 - Python 3 (standard library) and `python3-flask`
@@ -50,15 +52,15 @@ See [INSTALL.md](INSTALL.md) for updates, operation, backups and troubleshooting
 
 What the system does for it (details in [DESIGN.md](DESIGN.md), section 14):
 
-- **Login:** one-time codes by mail instead of passwords (8 characters, 15 minutes, single use, stored only as a hash, five tries per code). Only addresses of the allowed domains get a mail. Requests for codes are rate-limited per address and per IP address, with a cooldown, a hidden form field and a minimum form time against bots. No captcha and no third-party service.
+- **Login:** one-time codes by mail instead of passwords (8 characters, 15 minutes, single use, stored only as a hash, five tries per code). Only addresses of the allowed domains and the admin addresses get a mail. Requests for codes are rate-limited per address and per IP address, with a cooldown, a hidden form field and a minimum form time against bots. No captcha and no third-party service.
 - **Web application:** CSRF token on every form, signed session cookie (`HttpOnly`, `Secure` over https, `SameSite`), strict Content-Security-Policy (no inline scripts or styles, no external resources), `nosniff`, HSTS (https), no indexing by search engines, escaped output. Students see only their own submissions; the administration is for the configured admins only.
 - **Uploads:** only files with the names of the required files, size limits, validated file names, storage under pseudonymized paths. Images are served only if the content really is an image (never SVG).
 - **Running student code:** every submission runs in a `bubblewrap` sandbox: no network, no access to the host or the database, read-only system directories, no capabilities, own process namespace, cleared environment. On top come limits for CPU time, memory, file size, processes, run time and output; a size-limited `/tmp`; run folders on a RAM disk of fixed size; memory, task and network limits for the whole worker service. One submission at a time, and the worker refuses to start if the sandbox self-test fails.
 - **Verdict:** it comes from a results file written by `check` and `check_close`, not from printed text. These functions cannot be called by student code, the end of the run is recorded by the system, and submissions that contain suspicious words (`exit`, `evalin`, `fopen`, ...) are flagged for admins.
 - **Data:** hand-written SQL with parameters only, automatic deletion after the retention period, backups that are fully validated (checksums, paths, sizes) before a restore, access logs deleted after a few days. Secrets live only in `/etc/emptydiff/config.toml`, never in the repository.
-- **Operation:** a dedicated service user, systemd hardening (`NoNewPrivileges`, `PrivateTmp`, `ProtectSystem`), only Debian packages, a health check for monitoring.
+- **Operation:** a dedicated service user, systemd hardening (`NoNewPrivileges`, `PrivateTmp`, `ProtectSystem`), only distribution packages, a health check for monitoring.
 
-Known limits: student code and the testbench run in the same Octave process, so a deliberate attack on the check is hindered and flagged but not impossible; there is no syscall filter (seccomp) yet; the sandbox needs unprivileged user namespaces, so keep the kernel and `bubblewrap` up to date. The full `install.sh` run with a certificate on a real server is still to be verified (it ran on a Raspberry Pi in the plain-HTTP mode for closed networks, see INSTALL.md).
+Known limits: student code and the testbench run in the same Octave process, so a deliberate attack on the check is hindered and flagged but not impossible; there is no syscall filter (seccomp) yet; the sandbox needs unprivileged user namespaces, so keep the kernel and `bubblewrap` up to date. The full `install.sh` run with a certificate on a real server is still to be verified (it ran on a Raspberry Pi in the plain-HTTP mode for closed networks and behind a TLS reverse proxy, see INSTALL.md). A burst of 200 simultaneous submissions of a simple lab was checked in about a minute on a Raspberry Pi 4; labs with plots are not tried there yet.
 
 ## Development
 
@@ -74,7 +76,9 @@ Tests also run natively with `python3 -m unittest discover -s tests` (those need
 
 ## Documentation
 
+- [Website](https://andreas-schwenk.github.io/EmptyDiff/): what the system is for, screenshots, installation (English and German; the source is in `docs/`)
 - [INSTALL.md](INSTALL.md): installation and operation (English)
+- [CHANGELOG.md](CHANGELOG.md): what the system can do
 - [DESIGN.md](DESIGN.md): design decisions and details (German)
 - [config.example.toml](config.example.toml): all settings with their defaults
 
