@@ -1,0 +1,42 @@
+/*
+ * Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+ * Created in part with AI help (Claude, Anthropic).
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/* Source text: source view, syntax colors, editor with highlighting layer, images. */
+
+/* Source view (admin) with simple highlighting */
+details.srcfile + details.srcfile { margin-top: 1rem; }
+details.srcfile > summary { cursor: pointer; padding: 0.2rem 0; }
+.src { display: flex; margin-top: 0.5rem; background: var(--code-bg); overflow: hidden; }
+.src pre { background: none; white-space: pre; word-break: normal; tab-size: 4; }
+.src pre.gutter { flex: none; text-align: right; color: var(--muted); user-select: none; background: #e4e4e4; padding-right: 0.75rem; }
+.src pre.code { flex: 1; min-width: 0; overflow-x: auto; }
+.src-note { margin: 0.5rem 0 0; }
+.tok-comment { color: #525252; font-style: italic; }
+.tok-string { color: #00574f; }
+.tok-number { color: #a33a00; }
+.tok-keyword { color: #6b1fa8; font-weight: 700; }
+.tok-builtin { color: #1139b8; }
+
+/* Syntax highlighting in textareas (app.js, data-highlight): coloured layer under a transparent textarea */
+.hl-wrap { position: relative; border: 2px solid var(--control); background: var(--surface); }
+.hl-wrap:focus-within { outline: 3px solid var(--ring); }
+.hl-wrap textarea.hl-input, .hl-wrap textarea.hl-input:focus { position: relative; display: block; margin: 0; border: 0; outline: 0; background: transparent; color: transparent; caret-color: var(--text); tab-size: 4; }
+.hl-wrap textarea.hl-input::selection { background: rgba(255, 138, 0, 0.5); color: transparent; }
+.hl-layer { position: absolute; inset: 0; margin: 0; padding: 0.7rem 0.85rem; border: 0; border-radius: 0; background: none; overflow: hidden; pointer-events: none;
+  font-family: var(--mono); font-size: 0.88rem; line-height: 1.5; color: var(--text); white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; tab-size: 4; }
+.hl-layer code { padding: 0; background: none; font: inherit; }
+.hl-layer .tok-comment { font-style: normal; }
+.hl-layer .tok-keyword { font-weight: normal; }
+
+/* Windows high contrast: the browser forces the colors, so the layer under the text field would show twice */
+@media (forced-colors: active) {
+  .hl-layer { display: none; }
+  .hl-wrap textarea.hl-input { color: CanvasText; }
+}
+
+/* Images of a submission (admin source view): shown whole, but never wider than the page */
+.image-view { display: block; margin-top: 0.5rem; padding: 0.75rem; background: var(--surface-2); text-align: center; }
+.image-view img { display: inline-block; max-width: 100%; height: auto; background: #fff; }

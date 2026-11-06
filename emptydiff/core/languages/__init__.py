@@ -94,14 +94,11 @@ class Language:
         ProvidedError if it is not usable."""
         return []
 
-    def provided_file_name(self, name):
-        return name + self.extension
-
     def provided_files(self, text):
         """{file name: bytes} for the run folder, or {} for an empty
         text. Raises ProvidedError."""
         return {
-            self.provided_file_name(name): source.encode("utf-8")
+            name + self.extension: source.encode("utf-8")
             for name, source in self.split_provided(text)
         }
 

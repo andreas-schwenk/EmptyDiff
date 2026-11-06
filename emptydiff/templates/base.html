@@ -13,7 +13,15 @@
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg', v=icon_version) }}">
   <link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="{{ url_for('static', filename='favicon.ico', v=icon_version) }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png', v=icon_version) }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='layout.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='forms.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='code.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='utilities.css') }}">
   <script src="{{ url_for('static', filename='app.js') }}" defer></script>
   {% block head %}{% endblock %}
 </head>

@@ -1,0 +1,102 @@
+/*
+ * Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+ * Created in part with AI help (Claude, Anthropic).
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/* Reusable parts: buttons, badges, messages, results, dialog, tabs, switch, tooltip. */
+
+dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: 0.4rem 1rem; margin: 0; }
+dl.facts dt { color: var(--muted); }
+dl.facts dd { margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.chip { display: inline-block; padding: 0.1rem 0.55rem; background: #e8e8e8; font-family: var(--mono); font-size: 0.85rem; }
+
+/* ---------- Buttons ---------- */
+.btn, button {
+  appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
+  padding: 0.7rem 1.3rem; border: 0; border-radius: 0;
+  background: var(--accent); color: var(--accent-ink);
+  font: inherit; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; line-height: 1.2;
+  cursor: pointer; text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.btn:hover, button:hover { background: var(--text); color: #fff; }
+.btn:active, button:active { background: #333; color: #fff; }
+.btn:disabled, button:disabled { background: var(--surface-2); color: #767676; cursor: not-allowed; }
+.btn-ghost { background: var(--surface-2); color: var(--text); }
+.btn-ghost:hover { background: var(--text); color: #fff; }
+.btn-ghost:active { background: #333; }
+.btn-sm { padding: 0.45rem 0.8rem; font-size: 0.74rem; }
+.btn-block { width: 100%; }
+
+.badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.12rem 0.6rem; background: #e0e0e0; color: var(--text); font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+.badge.ok { background: var(--ok); color: #fff; }
+.badge.fail { background: var(--fail); color: #fff; }
+.badge.pending, .badge.late { background: var(--accent); color: var(--accent-ink); }
+.badge.hidden { width: 1.7rem; height: 1.7rem; padding: 0; justify-content: center; vertical-align: middle; background: var(--text); color: #fff; }
+.badge.hidden svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Notice for lecturers: the lab is still hidden from students */
+.preview-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; padding: 0.85rem 1.1rem; margin: 0 0 1.25rem; background: var(--text); color: #fff; border-top: 6px solid var(--accent); }
+.preview-banner .tag { padding: 0.1rem 0.7rem; background: var(--accent); color: var(--accent-ink); font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+.preview-banner a { color: #fff; text-decoration: underline; font-weight: 700; }
+
+.flash { display: flex; gap: 0.6rem; padding: 0.85rem 1.1rem; margin: 0 0 1rem; background: var(--surface-2); border-left: 6px solid var(--accent); }
+.flash.error { background: var(--fail-soft); border-left-color: var(--fail); }
+.note { padding: 0.75rem 1rem; background: var(--surface-2); }
+
+.result { display: flex; align-items: center; gap: 0.8rem; padding: 1rem 1.25rem; font-size: 1.2rem; font-weight: 800; }
+.result.ok { background: var(--ok); color: #fff; }
+.result.fail { background: var(--fail); color: #fff; }
+.result.pending { background: var(--accent); color: var(--accent-ink); }
+.spinner { width: 1.2rem; height: 1.2rem; border-radius: 50%; border: 3px solid var(--text); border-top-color: transparent; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } .btn, button { transition: none; } }
+
+/* ---------- Dialog (e.g. simulated mail) ---------- */
+dialog { width: min(36rem, 92vw); padding: 0; border: 0; background: var(--surface); color: var(--text); box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45); }
+dialog::backdrop { background: rgba(0, 0, 0, 0.65); }
+.dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.9rem 1.25rem; background: var(--text); color: #fff; }
+.dialog-head h2 { display: flex; align-items: center; gap: 0.6rem; }
+.dialog-body { padding: 1.1rem 1.25rem; }
+.dialog-foot { display: flex; justify-content: flex-end; gap: 0.5rem; padding: 0 1.25rem 1.1rem; }
+.dialog-body pre { margin-top: 0.9rem; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 0 1.5rem; margin: 0 0 1.5rem; border-bottom: 2px solid var(--text); }
+.tabs a { padding: 0.5rem 0; margin-bottom: -2px; color: var(--text); text-decoration: none; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 5px solid transparent; }
+.tabs a:hover { border-bottom-color: var(--accent); }
+.tabs a[aria-current] { border-bottom-color: var(--text); }
+.pills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1.25rem; }
+.pills a { padding: 0.35rem 0.9rem; background: var(--surface-2); color: var(--text); text-decoration: none; font-weight: 700; font-size: 0.85rem; }
+.pills a:hover { background: var(--accent); }
+.pills a[aria-current] { background: var(--text); color: #fff; }
+
+.flash.ok { border-left-color: var(--ok); background: var(--ok-soft); }
+
+.btn-icon { width: 3rem; padding: 0; color: var(--fail); }
+.btn-icon:hover { background: var(--fail); color: #fff; }
+
+.btn-danger { background: var(--fail); color: #fff; }
+.btn-danger:hover { background: #7f1d1d; }
+.btn-danger-text { color: var(--fail); }
+.btn-danger-text:hover { background: var(--fail); color: #fff; }
+
+/* Switch: visible (on) / hidden (off) */
+.switch-form { display: inline-flex; align-items: center; gap: 0.6rem; }
+button.switch { position: relative; width: 3rem; height: 1.7rem; padding: 0; background: #e0e0e0; border: 2px solid var(--text); flex: none; }
+button.switch:hover { background: #cfcfcf; }
+button.switch .knob { position: absolute; top: 2px; left: 2px; width: 1.1rem; height: 1.1rem; background: var(--text); transition: transform 0.15s; }
+button.switch[aria-checked="true"] { background: var(--accent); }
+button.switch[aria-checked="true"]:hover { background: var(--accent-hover); }
+button.switch[aria-checked="true"] .knob { transform: translateX(1.3rem); }
+
+/* Tooltips: app.js shows every title attribute at once in this box (the browser waits a moment and its own box
+   cannot be styled). Elements with class "tip" are not links or buttons themselves and get the help cursor. */
+.tip { cursor: help; }
+.tooltip {
+  position: fixed; z-index: 1000; max-width: 18rem; padding: 0.45rem 0.7rem; background: var(--text); color: #fff;
+  font-size: 0.8rem; font-weight: 400; line-height: 1.35; letter-spacing: 0; text-transform: none; text-align: left;
+  pointer-events: none; overflow-wrap: anywhere;
+}
+.tooltip[hidden] { display: none; }

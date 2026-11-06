@@ -8,7 +8,7 @@ import unittest
 
 from helpers import DbTestCase, add_lab
 from emptydiff.core import regress
-from test_grader import GOOD, MODES, make_cfg
+from test_grader import GOOD, MODES
 
 WRONG = b"function y = addone(x)\n  y = x + 2;\nend\n"
 

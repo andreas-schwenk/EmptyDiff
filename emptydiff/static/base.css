@@ -1,0 +1,61 @@
+/*
+ * Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+ * Created in part with AI help (Claude, Anthropic).
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/* Basis: color variables (light mode only), reset, typography, helpers for assistive technology. */
+
+:root {
+  color-scheme: light;
+  --bg: #ffffff;             /* page: pure white */
+  --surface: #ffffff;
+  --surface-2: #f2f2f2;      /* flat gray fill: secondary buttons, code, help boxes */
+  --border: #000000;         /* strong rules (section tops, table heads) */
+  --line: #d9d9d9;           /* the only fine lines: table row dividers */
+  --control: #000000;        /* frame of input fields */
+  --text: #000000;
+  --muted: #404040;
+  --code-bg: #f2f2f2;
+
+  --accent: #ff8a00;          /* strong orange; black text on it has a contrast of about 9:1 */
+  --accent-hover: #e67a00;
+  --accent-edge: #ff8a00;
+  --accent-ink: #000000;      /* text on the accent color */
+  --accent-text: #000000;     /* accent color used as text: black, emphasis comes from underline and weight */
+  --accent-soft: #ffe6c2;
+  --ring: #ff8a00;
+
+  --ok: #14532d;
+  --ok-soft: #d4edda;
+  --fail: #b91c1c;
+  --fail-soft: #fbdcdc;
+
+  --radius: 0;
+  --radius-sm: 0;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--text); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.18em; }
+a:hover { text-decoration-color: var(--accent); }
+h1 { font-size: 2.1rem; font-weight: 800; line-height: 1.15; margin: 0; letter-spacing: -0.025em; }
+h2 { font-size: 1.15rem; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+p { margin: 0 0 0.75rem; }
+small, .muted { color: var(--muted); }
+code { font-family: var(--mono); font-size: 0.9em; background: #e8e8e8; padding: 0.08em 0.35em; color: var(--text); }
+pre code, .src code, .hl-layer code { background: none; padding: 0; color: inherit; }
+:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+
+pre { margin: 0; padding: 1rem; background: var(--code-bg); font-family: var(--mono); font-size: 0.88rem; line-height: 1.5; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

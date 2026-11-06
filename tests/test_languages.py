@@ -7,8 +7,6 @@ what the rest of the system does with a language (labs, submissions,
 backup). A toy language stands in for a second one.
 """
 
-import copy
-import json
 import os
 import tempfile
 import unittest

@@ -1,0 +1,64 @@
+/*
+ * Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+ * Created in part with AI help (Claude, Anthropic).
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/* Forms: fields, upload area, name list, checkboxes, action bars. */
+
+form.inline { display: inline; margin: 0; }
+
+.field { display: grid; gap: 0.35rem; margin-bottom: 1rem; }
+.field > label { font-weight: 700; font-size: 0.92rem; color: var(--text); }
+input[type=email], input[type=text], input[type=number], input[type=datetime-local], select, textarea {
+  width: 100%; padding: 0.7rem 0.85rem; border: 2px solid var(--control); border-radius: 0;
+  background: var(--surface); color: var(--text); font: inherit;
+}
+input[type=email]:focus, input[type=text]:focus, input[type=number]:focus, input[type=datetime-local]:focus, select:focus, textarea:focus { outline: 3px solid var(--ring); outline-offset: 0; }
+input.code { font-family: var(--mono); font-size: 1.5rem; letter-spacing: 0.3em; text-align: center; text-transform: uppercase; padding: 0.8rem; }
+
+/* ---------- File upload ---------- */
+.dropzone {
+  position: relative; display: grid; justify-items: center; gap: 0.3rem; text-align: center;
+  padding: 2rem 1rem; border: 2px dashed var(--text); background: var(--surface-2);
+  transition: background 0.15s;
+}
+.dropzone:hover, .dropzone.dragover, .dropzone:focus-within { background: var(--accent-soft); }
+.dropzone.has-files { border-style: solid; }
+.dropzone input[type=file] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.dropzone > :not(input) { pointer-events: none; }  /* the transparent input must get the drop */
+.dz-icon { width: 2.6rem; height: 2.6rem; color: var(--text); }
+.dz-title { font-weight: 700; }
+.dz-hint { color: var(--muted); font-size: 0.88rem; }
+.file-list { list-style: none; margin: 0.75rem 0 0; padding: 0; display: grid; gap: 0.35rem; }
+.file-list:empty { display: none; }
+.file-list li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.45rem 0.75rem; background: var(--surface-2); font-family: var(--mono); font-size: 0.88rem; }
+.form-actions { margin-top: 1rem; display: flex; justify-content: flex-end; gap: 0.5rem; }
+
+textarea { resize: vertical; min-height: 4rem; line-height: 1.5; }
+textarea.mono, .mono { font-family: var(--mono); font-size: 0.88rem; }
+.field small { line-height: 1.4; }
+.narrow { max-width: 30rem; }
+.input-group { display: flex; align-items: stretch; max-width: 20rem; }
+.input-group .prefix { display: flex; align-items: center; padding: 0 0.75rem; border: 2px solid var(--control); border-right: 0; background: var(--surface-2); color: var(--text); font-family: var(--mono); }
+.input-group input { min-width: 0; }
+
+/* List of file names (from [data-names], see app.js) */
+.name-rows { display: grid; gap: 0.5rem; margin-top: 0.25rem; }
+.name-row { display: grid; grid-template-columns: minmax(0, 24rem) auto; gap: 0.25rem 0.5rem; align-items: stretch; }
+.name-row .field-error { grid-column: 1 / -1; margin: 0; color: var(--fail); font-size: 0.85rem; }
+.name-row input.invalid { border-color: var(--fail); }
+.name-add { justify-self: start; }
+
+.toolbar-inline { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+.check { display: flex; gap: 0.7rem; align-items: flex-start; font-weight: 400; cursor: pointer; }
+.check input { margin-top: 0.3rem; width: 1.1rem; height: 1.1rem; accent-color: var(--text); flex: none; }
+.check small { color: var(--muted); }
+
+.sticky-actions { position: sticky; bottom: 0; z-index: 5; margin: 1rem -0.5rem 0; padding: 0.8rem 0.5rem; background: var(--bg); border-top: 3px solid var(--text); }
+
+.inline-form { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; }
+
+.field > label.dropzone, .field > label.check { font-weight: 400; font-size: 1rem; }
+.field > label.dropzone .dz-title { font-weight: 600; }

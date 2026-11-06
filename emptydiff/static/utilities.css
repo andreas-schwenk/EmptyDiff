@@ -1,0 +1,24 @@
+/*
+ * Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+ * Created in part with AI help (Claude, Anthropic).
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/* Helpers: spacing classes (the Content-Security-Policy forbids style attributes), hidden field. */
+
+/* Spacing helpers (the Content-Security-Policy forbids style attributes). !important replaces what the
+   inline styles did: they won over every rule of the stylesheet. */
+.m-0 { margin: 0 !important; }
+.mt-0 { margin-top: 0 !important; }
+.mb-0 { margin-bottom: 0 !important; }
+
+.mt-075 { margin-top: 0.75rem !important; }
+.mt-1 { margin-top: 1rem !important; }
+
+.center-note { margin: 1rem 0 0 !important; text-align: center; }
+.report-note { margin: 0.9rem 0 0 !important; font-size: 0.9rem; }
+.no-underline { text-decoration: none; }
+.explain pre.example { margin: 0.2rem 0 0.8rem; }
+
+/* Hidden field of the login form (bots fill it, people never see it; the CSP forbids style attributes) */
+.hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }

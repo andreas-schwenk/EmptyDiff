@@ -30,7 +30,7 @@ from helpers import (
     add_lab,
 )
 from test_languages import with_toy
-from emptydiff.core import auth, db, labs, mail, submissions, worker
+from emptydiff.core import auth, labs, mail, submissions, worker
 
 CSRF_RE = re.compile(r'name="csrf_token" value="([^"]+)"')
 CODE_RE = re.compile(r"^    ([0-9A-Z]{8})$", re.M)
@@ -750,7 +750,9 @@ class RememberTest(WebTestCase):
         self.assertTrue(links)
         for link in links:
             self.assertTrue(link.startswith("/lab/"), link)
-        self.assertIn("/lab/static/style.css", page)
+        self.assertIn("/lab/static/base.css", page)
+        for sheet in re.findall(r'href="/lab(/static/[a-z]+\.css)"', page):
+            self.assertEqual(client.get(sheet).status_code, 200, sheet)
         resp = client.get("/login", base_url=base)
         self.assertTrue(
             all("Path=/lab" in c for c in resp.headers.getlist("Set-Cookie"))

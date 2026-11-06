@@ -13,6 +13,7 @@ First version, a rewrite of an older mail-based submission system.
 - **Operation tools:** `dev/loadtest.py` simulates many students uploading at once on a running installation and reports upload times, throughput and failures. If the mail with a login code cannot be sent, the login page still opens the page for the code, so that a code printed with `issue-code` can be entered.
 - **Robust checks:** if bubblewrap itself does not start (for example because no process can be created at that moment), the worker repeats the check up to three times and otherwise stores an error; a submission is never rated "not passed" because of a sandbox that did not start.
 - **Lecturer login:** an address listed in `auth.admins` may log in even if its domain is not in `auth.allowed_domains` (only that exact address, not its domain).
+- **Cleanup:** the stylesheet is split by topic into nine files (`base`, `layout`, `components`, `forms`, `tables`, `code`, `pages`, `admin`, `utilities`, loaded in this order); unused CSS rules, test imports and a duplicated cookie-path helper are removed.
 - **Code style:** the Python source follows PEP 8 (79 columns, comments and docstrings 72), formatted with black and checked with pycodestyle (`dev/docker.sh lint` and `format`).
 - **Accessibility and design:** high contrast, square flat design, skip link, live announcement of results, no external resources, `noindex`.
 

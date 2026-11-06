@@ -14,7 +14,6 @@ from datetime import datetime, timezone
 from unittest import mock
 
 from helpers import (
-    FUTURE,
     GAUSS_FUNCTION,
     GOOD,
     OTHER,

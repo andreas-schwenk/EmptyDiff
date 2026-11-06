@@ -6,7 +6,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 
 from helpers import OTHER, STUDENT, DbTestCase
-from emptydiff.core import auth, config
+from emptydiff.core import auth
 
 DOMAINS = [
     "student.example.edu",

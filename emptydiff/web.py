@@ -73,17 +73,17 @@ def _load_secret_key(data_dir):
 REMEMBER_COOKIE = "emptydiff_remember"
 
 
+def cookie_path():
+    return request.script_root or "/"
+
+
 class PathSessionInterface(SecureCookieSessionInterface):
     """The session cookie is valid only under the path the system is
     served at (for example /lab), so that it never reaches other
     applications on the same host."""
 
     def get_cookie_path(self, app):
-        return request.script_root or "/"
-
-
-def cookie_path():
-    return request.script_root or "/"
+        return cookie_path()
 
 
 BACKUP_FORM_OVERHEAD = 1_000_000

@@ -1,0 +1,65 @@
+/*
+ * Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+ * Created in part with AI help (Claude, Anthropic).
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/* Administration: courses, help, deletion warnings, explanations. */
+
+.course-empty { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 1rem 0; }
+.course-empty p { margin: 0; }
+.lead { margin: 0 0 1.25rem; color: var(--muted); }
+.explain { margin-bottom: 1rem; }
+.explain p { margin: 0 0 0.5rem; }
+.explain ul { margin: 0; padding-left: 1.2rem; }
+.explain li { margin-bottom: 0.25rem; }
+
+.danger-zone { margin-top: 1.5rem; border-top-color: var(--fail); }
+.danger-zone .card-title { color: var(--fail); }
+
+/* Courses (collapsible) */
+details.course { padding: 0; }
+details.course + details.course, .card + details.course { margin-top: 1rem; }
+details.course > summary { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; padding: 0.4rem 0 1rem; cursor: pointer; list-style: none; }
+details.course > summary::-webkit-details-marker { display: none; }
+details.course > summary::before { content: "▸"; color: var(--muted); transition: transform 0.15s; }
+details.course[open] > summary::before { transform: rotate(90deg); }
+.course-name { font-size: 1.3rem; font-weight: 800; }
+.course-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-left: auto; }
+details.course[open] > summary { padding-bottom: 0.6rem; }
+details.course .table-wrap { margin: 0; padding: 0 0 0.6rem; }
+
+.summary-line { margin: 0 0 0.4rem; }
+.help-line { margin: 0 0 1rem; font-size: 0.88rem; }
+
+.explain { margin: 0.6rem 0 1.25rem; }
+.overdue { color: var(--fail); font-weight: 700; }
+small.block { display: block; margin-top: 0.3rem; }
+.drop-rules { margin: 0.6rem 0 0; font-size: 0.85rem; }
+
+details.help { margin-top: 1.25rem; padding: 0.9rem 1.25rem; background: var(--surface-2); }
+details.help summary { cursor: pointer; font-weight: 800; }
+details.help[open] summary { margin-bottom: 0.5rem; }
+details.help ol { margin: 0 0 0.5rem; padding-left: 1.3rem; }
+details.help li { margin-bottom: 0.3rem; }
+details.help p { margin: 0; }
+.steps { margin: 0; padding-left: 1.3rem; }
+.steps li { margin-bottom: 0.55rem; }
+dl.terms { display: grid; grid-template-columns: minmax(8rem, max-content) 1fr; gap: 0.6rem 1.25rem; margin: 0; }
+dl.terms dt { font-weight: 600; }
+dl.terms dd { margin: 0; }
+@media (max-width: 40rem) { dl.terms { grid-template-columns: 1fr; gap: 0.1rem; } dl.terms dd { margin-bottom: 0.6rem; } }
+
+/* Warning about submissions that are about to be deleted (retention) */
+.retention-warning { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1.25rem; margin: 0 0 1.25rem; padding: 1rem 1.25rem; border-left: 8px solid var(--fail); background: var(--fail-soft); color: var(--fail); }
+.retention-warning > div { flex: 1 1 24rem; display: grid; gap: 0.35rem; }
+.retention-warning span, .retention-warning a:not(.btn) { color: var(--text); }
+.retention-warning.urgent { background: var(--fail); color: #fff; }
+.retention-warning.urgent span, .retention-warning.urgent a:not(.btn) { color: #fff; }
+.retention-list { margin: 0; padding-left: 1.2rem; }
+.retention-warning .btn { background: var(--fail); color: #fff; }
+.retention-warning .btn:hover { background: #7f1d1d; }
+.retention-warning.urgent .btn { background: #fff; color: var(--fail); }
+.retention-warning.urgent .btn:hover { background: var(--fail-soft); }
+.page-head + .retention-warning { margin-top: 0; }
+.retention-warning + .card, .retention-warning + .card.accent { margin-top: 0; }

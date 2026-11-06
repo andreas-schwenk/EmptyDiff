@@ -1,0 +1,100 @@
+/*
+ * Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+ * Created in part with AI help (Claude, Anthropic).
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/* Tables: base table, lab table, narrow card view, credit matrix, grouped submissions. */
+
+/* Base table */
+.table-wrap { overflow-x: auto; margin: 0 -0.4rem; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text); padding: 0.45rem 0.75rem; border-bottom: 2px solid var(--text); white-space: nowrap; font-weight: 800; }
+td { padding: 0.75rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--surface-2); }
+td a { font-weight: 600; }
+
+/* Cookie table of the privacy statement (table.defs): narrow, one block per row, label from data-label. */
+@media (max-width: 40rem) {
+  table.defs, table.defs tbody, table.defs tr, table.defs td { display: block; }
+  table.defs thead { display: none; }
+  table.defs tr { padding: 0.75rem 0; border-bottom: 1px solid var(--line); }
+  table.defs tbody tr:last-child { border-bottom: none; }
+  table.defs td { padding: 0.15rem 0; border: 0; }
+  table.defs td[data-label]::before { content: attr(data-label); display: block; margin-top: 0.4rem; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  table.defs tbody tr:hover td { background: none; }
+  table.defs { width: auto; margin: 0 0.4rem; }
+}
+
+tr.off td { color: var(--muted); }
+tr.off td a { color: var(--muted); }
+.row-actions { text-align: right; white-space: nowrap; }
+.row-actions form { margin-left: 0.25rem; }
+
+.legend { margin: 0.9rem 0 0; font-size: 0.85rem; }
+
+/* Lab table of the administration: fixed column widths so nothing jumps when toggling */
+@media (min-width: 56.01rem) {
+  table.labs { table-layout: fixed; }
+  table.labs .c-switch { width: 6rem; }
+  table.labs .c-lab { width: 8rem; }
+  table.labs .c-due { width: 12.5rem; }
+  table.labs .c-actions { width: 14rem; }
+}
+/* Narrow (table.cards): every row becomes a small card. The fields are arranged by class:
+   t-main (name) and t-side (status/switch) on top, t-sub and t-sub2 (with label from data-label) below,
+   t-act (actions) last. */
+@media (max-width: 56rem) {
+  table.cards, table.cards tbody, table.cards tr, table.cards td { display: block; }
+  table.cards colgroup, table.cards thead { display: none; }
+  table.cards tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "main side" "sub sub2" "act act"; gap: 0.3rem 1rem; align-items: center; padding: 0.85rem 0; border-bottom: 1px solid var(--line); }
+  table.cards tbody tr:last-child { border-bottom: none; }
+  table.cards td { padding: 0; border: 0; }
+  table.cards tbody tr:hover td { background: none; }
+  table.cards { width: auto; margin: 0 0.4rem; }
+  table.cards .t-main { grid-area: main; font-size: 1.05rem; overflow-wrap: anywhere; }
+  table.cards .t-side { grid-area: side; justify-self: end; }
+  table.cards .t-sub { grid-area: sub; }
+  table.cards .t-sub2 { grid-area: sub2; text-align: right; white-space: nowrap; }
+  table.cards .t-sub2[data-label]::before { content: attr(data-label); margin-right: 0.4rem; color: var(--muted); font-size: 0.85rem; }
+  table.cards .t-act { grid-area: act; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-start; margin-top: 0.4rem; text-align: left; }
+  table.cards .t-act .actions { justify-content: flex-start; }
+}
+table.matrix { width: auto; min-width: 100%; }
+table.matrix th { text-align: center; padding: 0.4rem 0.5rem; }
+table.matrix th:first-child { text-align: left; }
+table.matrix td { padding: 0.45rem 0.5rem; text-align: center; }
+table.matrix td.who-cell { text-align: left; font-family: var(--mono); font-size: 0.85rem; white-space: nowrap; }
+table.matrix th:first-child, table.matrix td.who-cell { position: sticky; left: 0; z-index: 1; background: var(--surface); }
+table.matrix td.cell a { display: block; text-decoration: none; font-weight: 700; }
+table.matrix td.cell.pass { background: var(--ok-soft); color: var(--ok); }
+table.matrix td.cell.fail { background: var(--fail-soft); color: var(--fail); }
+table.matrix td.cell.pending, table.matrix td.cell.received, table.matrix td.cell.error { background: var(--accent-soft); color: var(--text); }
+table.matrix td.cell.none { color: var(--muted); }
+table.matrix td.cell a { color: inherit; }
+table.matrix tbody tr:hover td.cell { filter: brightness(0.97); }
+table.matrix td.total { font-weight: 600; white-space: nowrap; }
+
+.nowrap { white-space: nowrap; }
+/* The space for the warning sign is always reserved so the column does not jump when toggling */
+.flag-slot { display: inline-block; width: 1.5rem; margin-left: 0.3rem; text-align: center; }
+.flag { color: var(--fail); cursor: help; }
+
+.row-actions .actions { display: flex; flex-wrap: wrap; gap: 0.3rem; justify-content: flex-end; }
+.row-actions .actions form { margin: 0; }
+
+/* Label of the switch where the table head is gone (narrow screens) */
+@media (max-width: 56rem) {
+  table.cards .t-side[data-label]::before { content: attr(data-label); margin-right: 0.6rem; color: var(--muted); font-size: 0.85rem; vertical-align: middle; }
+}
+
+/* Submissions of a lab, grouped by student: the latest one is shown, the earlier ones fold away (with JavaScript;
+   without it all rows stay visible). */
+.group-toggle { display: none; padding: 0; border: 0; background: none; color: var(--text); font: inherit; font-size: 0.85rem; font-weight: 400; text-transform: none; letter-spacing: normal; text-decoration: underline; cursor: pointer; }
+.js .group-toggle { display: inline; }
+.group-toggle::before { content: ""; display: inline-block; width: 0.4em; height: 0.4em; margin-right: 0.55em; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-0.1em) rotate(-45deg); }
+.group-toggle[aria-expanded="true"]::before { transform: translateY(-0.2em) rotate(45deg); }
+.js tbody.group.collapsed tr.older { display: none; }
+tbody.group tr.older { box-shadow: inset 3px 0 0 var(--line); }
+tbody.group tr.older td:first-child { padding-left: 0.9rem; }

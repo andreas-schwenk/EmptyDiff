@@ -1,0 +1,58 @@
+/*
+ * Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+ * Created in part with AI help (Claude, Anthropic).
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/* Page frame: header bar, main area, footer, page head, cards, grid, skip link. */
+
+.topbar { position: sticky; top: 0; z-index: 10; background: #fff; color: var(--text); border-bottom: 4px solid var(--text); }
+.topbar-inner { max-width: 64rem; margin: 0 auto; padding: 0.7rem 1rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.25rem; }
+.brand { display: flex; align-items: center; gap: 0.6rem; color: var(--text); text-decoration: none; font-weight: 800; font-size: 1.2rem; letter-spacing: -0.01em; }
+.brand-mark { width: 2.4rem; height: 2.4rem; display: block; flex: none; }
+.brand-mark svg { display: block; width: 100%; height: 100%; }
+.devbadge { padding: 0.1rem 0.5rem; background: var(--text); color: #fff; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; }
+.topnav { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 1.25rem; margin-left: auto; }
+.topnav a { padding: 0.3rem 0; color: var(--text); text-decoration: none; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 3px solid transparent; }
+.topnav a:hover { border-bottom-color: var(--accent); }
+.topnav a[aria-current="page"] { border-bottom-color: var(--text); }
+.who { color: var(--muted); font-size: 0.85rem; }
+
+main { max-width: 64rem; margin: 0 auto; padding: 1.5rem 1rem 2rem; }
+.footer { max-width: 64rem; margin: 0 auto; padding: 1rem 1rem 2rem; color: var(--muted); font-size: 0.85rem; text-align: center; line-height: 1.7; }
+.footer a { color: var(--muted); text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+.footer a:hover { color: var(--text); text-decoration-color: var(--accent); }
+.footer .sep { margin: 0 0.4rem; }
+
+.page-head { margin: 0 0 1.25rem; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.5rem 1rem; justify-content: space-between; }
+.page-head .subtitle { color: var(--muted); margin: 0.6rem 0 0; }
+.back { display: inline-block; margin-bottom: 0.5rem; color: var(--muted); text-decoration: none; font-size: 0.9rem; }
+.back:hover { color: var(--text); text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
+
+
+.card { background: none; border-top: 3px solid var(--text); padding: 1.1rem 0 1.5rem; }
+.card + .card, .grid + .card, .card + .grid, .result + .card, .result + .flash, .card + .flash { margin-top: 1.5rem; }
+
+.card.accent { border-top: 6px solid var(--accent); }
+.card-title { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.9rem; }
+.card-title .dot { width: 0.6rem; height: 0.6rem; background: var(--accent); }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.grid > .card { margin-top: 0; }
+@media (max-width: 48rem) { .grid { grid-template-columns: 1fr; } }
+
+@media (max-width: 58rem) { .who { display: none; } }
+
+@media (max-width: 40rem) {
+  main { padding: 1rem 0.75rem 1.5rem; }
+  .card { padding: 1rem 0 1.25rem; }
+  .topnav { margin-left: 0; width: 100%; }
+  h1 { font-size: 1.45rem; }
+}
+
+/* Language switcher in the footer */
+.langs a[aria-current="true"] { color: var(--text); font-weight: 700; text-decoration: none; }
+
+/* Skip link: visible only while it has the focus */
+.skip { position: absolute; left: 0.5rem; top: -4rem; z-index: 20; padding: 0.6rem 1rem; background: var(--text); color: #fff; font-weight: 700; text-decoration: none; }
+.skip:focus { top: 0.5rem; }
+main:focus { outline: none; }
