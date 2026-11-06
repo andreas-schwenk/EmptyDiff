@@ -1,0 +1,231 @@
+<!doctype html>
+<!--
+  Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+  Created in part with AI help (Claude, Anthropic).
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EmptyDiff</title>
+  <meta name="description" content="EmptyDiff prüft Abgaben in Programmierpraktika automatisch. Freie Software für einen eigenen Linux-Server.">
+  <link rel="alternate" hreflang="en" href="index.html">
+  <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="favicon/favicon.ico" sizes="16x16 32x32 48x48">
+  <link rel="apple-touch-icon" href="favicon/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="inner">
+    <img src="favicon/favicon.svg" alt="">
+    <span class="name">EmptyDiff</span>
+    <nav aria-label="Sprache"><strong>Deutsch</strong> / <a href="index.html" hreflang="en" lang="en">English</a></nav>
+  </div>
+</header>
+
+<main>
+<h1>EmptyDiff</h1>
+<p>
+  EmptyDiff prüft Abgaben in Programmierpraktika automatisch. Studierende
+  laden ihre Dateien hoch und sehen sofort das Ergebnis. Lehrende schreiben
+  je Versuch eine Testbench, also einen kurzen automatischen Test, sehen alle
+  Abgaben und führen die Testatliste. Die Prüfung läuft in einer Sandbox. Das
+  System läuft auf Linux (empfohlen: Debian oder Ubuntu) und prüft aktuell
+  Octave- und MATLAB-Dateien (<code>.m</code>). Es ist freie Software unter
+  der GPLv3.
+</p>
+<p class="links">
+  <a href="https://github.com/andreas-schwenk/EmptyDiff">Quelltext auf GitHub</a>
+  <a class="secondary" href="#installation">Installation</a>
+</p>
+
+<h2 id="wofuer">Wofür das System da ist</h2>
+<p>
+  In einem Praktikum geben Studierende Programme ab, oft Dutzende pro Versuch.
+  EmptyDiff nimmt diese Abgaben entgegen und führt sofort die Tests aus, die
+  die Lehrenden für den Versuch geschrieben haben. Die Studierenden sehen
+  gleich, was stimmt und was nicht, und können erneut abgeben (höchstens so
+  oft, wie eingestellt; Standard sind 7 Abgaben). Die Lehrenden sehen alle
+  Abgaben und eine Testatliste.
+</p>
+<p>
+  Die automatischen Tests ersetzen nicht, dass jemand den Code liest. Sie
+  nehmen den Betreuern die Routineprüfung ab.
+</p>
+
+<h2 id="studierende">Ablauf für Studierende</h2>
+<ol>
+  <li><strong>Anmelden:</strong> Studierende geben ihre Hochschul-Mailadresse
+    ein und erhalten einen Einmalcode per Mail. Es gibt keine Passwörter.</li>
+  <li><strong>Hochladen:</strong> Zu jedem Versuch laden sie die verlangten
+    Dateien hoch. Angenommen werden nur Dateien mit den vorgegebenen Namen.
+    Nach der Frist sind Abgaben weiter möglich, sie werden als verspätet
+    markiert.</li>
+  <li><strong>Prüfen:</strong> Die Abgabe läuft in einer Sandbox ohne Netzwerk
+    und mit Grenzen für Zeit und Speicher, immer eine nach der anderen.</li>
+  <li><strong>Bericht:</strong> Nach wenigen Sekunden steht das Ergebnis da:
+    für jede Prüfung ein Haken oder ein Kreuz mit einem Hinweis.</li>
+</ol>
+<figure>
+  <img src="img/upload.webp" width="1200" height="793" alt="Seite eines Versuchs: Frist, geforderte Dateien, Abgabefeld zum Hochladen">
+  <figcaption>Ein Versuch: Frist, geforderte Dateien und das Feld zum Hochladen.</figcaption>
+</figure>
+<figure>
+  <img src="img/report.webp" width="1200" height="753" alt="Bericht einer nicht bestandenen Abgabe: drei Prüfungen mit Kreuz, eine mit Haken">
+  <figcaption>Der Bericht einer Abgabe, die nicht besteht. Jede Zeile ist eine Prüfung der Testbench.</figcaption>
+</figure>
+
+<h2 id="lehrende">Für Lehrende</h2>
+<p>
+  Alles läuft im Browser: Kurse und Versuche anlegen, Frist und geforderte
+  Dateien festlegen, die Testbench schreiben, den Versuch für Studierende
+  sichtbar schalten. Neue Versuche sind zunächst verborgen. Lehrende sehen alle
+  Versuche und können wie Studierende abgeben, um die Testbench auszuprobieren.
+</p>
+<figure>
+  <img src="img/lab-edit.webp" width="1200" height="1107" alt="Formular zum Bearbeiten eines Versuchs: Sprache, Frist, Beschreibung, geforderte Dateien">
+  <figcaption>Einen Versuch einrichten: Sprache, Frist, Beschreibung und geforderte Dateien. Darunter folgt die Testbench.</figcaption>
+</figure>
+
+<p>
+  Eine <strong>Testbench</strong> besteht aus wenigen Zeilen mit
+  <code>check(...)</code> und <code>check_close(...)</code>. Das Urteil kommt
+  nie aus dem, was das Programm der Studierenden ausgibt, sondern aus einer
+  Ergebnisdatei, die nur diese beiden Funktionen schreiben. Bestanden ist eine
+  Abgabe, wenn es mindestens eine Prüfung gibt, alle bestehen und die
+  Testbench bis zum Ende durchläuft.
+</p>
+<pre><code>x = addone(1);
+check(x == 2, 'addone(1) liefert 2', 'addone(1) liefert nicht 2');
+check_close(addone([1 2]), [2 3], 1e-12, 'Vektoren klappen', 'Vektoren falsch');</code></pre>
+
+<p>
+  Zu jedem Versuch gibt es eine Liste der Abgaben. Dort lässt sich der Code
+  ansehen, eine Abgabe als ZIP laden, nach einer Korrektur der Testbench neu
+  prüfen oder löschen.
+</p>
+<figure>
+  <img src="img/submissions.webp" width="1200" height="920" alt="Liste der Abgaben eines Versuchs mit Student, Nummer, Eingang, Stand und Schaltflächen">
+  <figcaption>Die Abgaben eines Versuchs. Frühere Abgaben einer Person sind eingeklappt.</figcaption>
+</figure>
+<p>
+  Die Testatliste zeigt je Student und Versuch das Ergebnis der letzten Abgabe
+  und lässt sich als CSV herunterladen.
+</p>
+<figure>
+  <img src="img/credit.webp" width="1200" height="673" alt="Testatliste: Tabelle mit Studierenden und Versuchen, bestandene Zellen grün, nicht bestandene rot">
+  <figcaption>Die Testatliste eines Kurses.</figcaption>
+</figure>
+<p>
+  Außerdem gibt es: einen Kurs fürs nächste Semester klonen, Versuche oder
+  alles sichern und wiederherstellen, und eine Datenschutzerklärung, die aus
+  der Konfiguration entsteht. Die Oberfläche gibt es auf Deutsch und Englisch.
+</p>
+
+<h2 id="technik">Technik und Grenzen</h2>
+<ul>
+  <li>Python mit Flask hinter Apache (<code>mod_wsgi</code>), SQLite als
+    Datenbank, eine Konfigurationsdatei. Es werden nur Pakete der
+    Distribution verwendet, kein <code>pip</code>, kein Docker, kein Node.</li>
+  <li>Abgaben laufen in einer <code>bubblewrap</code>-Sandbox ohne Netzwerk,
+    mit Grenzen für CPU, Speicher, Prozesse und Ausgabe, und strikt nacheinander.</li>
+  <li>Die Daten werden nach einer einstellbaren Frist automatisch gelöscht
+    (Standard 730 Tage). Es gibt keine Tracker und keine externen Ressourcen.</li>
+  <li>Alles, was von der Programmiersprache abhängt, steckt in einem Adapter
+    je Sprache. Heute gibt es nur Octave/MATLAB.</li>
+  <li>Der Programmcode der Studierenden und die Testbench laufen im selben
+    Octave-Prozess. Ein gezielter Angriff auf die Prüfung wird erschwert, ist
+    aber nicht ausgeschlossen.</li>
+  <li>Weil die Prüfungen nacheinander laufen, ist das System für kleine bis
+    mittlere Lehrveranstaltungen gedacht. Auf einem Raspberry Pi 4 waren 200
+    gleichzeitige Abgaben einer einfachen Aufgabe nach etwa einer Minute
+    geprüft. Versuche mit Plots, echter Mailversand und TLS sind dort noch
+    nicht erprobt.</li>
+  <li>Es gibt keine automatischen Sicherungen. Lehrende laden sie in der
+    Weboberfläche herunter.</li>
+</ul>
+
+<h2 id="installation">Installation</h2>
+<p><strong>Voraussetzungen</strong></p>
+<ul>
+  <li>Ein Linux-Server mit Root-Zugriff und <code>apt</code>. Empfohlen sind
+    Debian oder Ubuntu; getestet ist bisher nur Debian 13. Bei Ubuntu braucht
+    man Python 3.11 oder neuer (ab Ubuntu 24.04).</li>
+  <li>Ein DNS-Name für den Server und die Ports 80 und 443 aus dem Internet
+    für das Zertifikat. Für geschlossene Netze gibt es zwei Alternativen:
+    reines HTTP oder den Betrieb hinter einem Reverse Proxy (siehe unten).</li>
+  <li>Ein SMTP-Server, über den die Einmalcodes verschickt werden.</li>
+  <li>Unprivilegierte User-Namespaces im Kernel (Debian-Standard; bei Ubuntu 24.04
+    kann AppArmor sie einschränken), die <code>bubblewrap</code> braucht. Der
+    Selbsttest von <code>install.sh</code> zeigt, ob die Sandbox läuft.</li>
+</ul>
+<p><strong>Abhängigkeiten</strong> (Pakete der Distribution, <code>install.sh</code> installiert sie)</p>
+<ul>
+  <li><code>apache2</code> und <code>libapache2-mod-wsgi-py3</code>
+    (Zertifikate über das enthaltene <code>mod_md</code>)</li>
+  <li><code>python3</code> (ab 3.11) und <code>python3-flask</code>; der übrige
+    Code nutzt nur die Standardbibliothek</li>
+  <li><code>bubblewrap</code> und <code>util-linux</code> (für <code>prlimit</code>)</li>
+  <li>für Octave/MATLAB: <code>octave</code>, dazu <code>gnuplot-nox</code> und
+    <code>fonts-freefont-otf</code>, damit Plots ohne Bildschirm laufen</li>
+</ul>
+<p><strong>Ablauf</strong></p>
+<pre><code>sudo apt-get install -y git
+sudo git clone https://github.com/andreas-schwenk/EmptyDiff /opt/emptydiff
+cd /opt/emptydiff
+sudo ./install.sh --accept-acme-terms</code></pre>
+<p>
+  Beim ersten Lauf legt das Skript die Vorlage
+  <code>/etc/emptydiff/config.toml</code> an und hält an. In dieser einen
+  Konfigurationsdatei stehen Servername, erlaubte Mail-Domains, Admins,
+  Mailserver und die Angaben für die Datenschutzerklärung. Danach startet man
+  das Skript noch einmal:
+</p>
+<pre><code>sudo nano /etc/emptydiff/config.toml
+sudo ./install.sh --accept-acme-terms</code></pre>
+<p>
+  Das Skript installiert die Pakete, legt den Benutzer <code>emptydiff</code>
+  an, erzeugt die Dateien für Apache und systemd, prüft die Sandbox und startet
+  die Dienste. Ein Update ist derselbe Aufruf nach <code>git pull</code>.
+</p>
+<p>
+  Ohne öffentlichen DNS-Namen gibt es zwei Wege: <code>base_url</code> mit
+  <code>http://</code> für ein geschlossenes Testnetz (Codes und Sitzungen
+  laufen dann unverschlüsselt), oder den Betrieb hinter einem Reverse Proxy,
+  der TLS beendet und das System unter einem Pfad seiner Seite anbietet.
+  Beides steht in der
+  <a href="https://github.com/andreas-schwenk/EmptyDiff/blob/main/INSTALL.md">INSTALL.md</a>
+  (englisch), ebenso Betrieb, Update und die Hinweise zum Raspberry Pi.
+</p>
+
+<h2 id="weiteres">Weiteres</h2>
+<ul>
+  <li><a href="https://github.com/andreas-schwenk/EmptyDiff">Quelltext auf GitHub</a></li>
+  <li><a href="https://github.com/andreas-schwenk/EmptyDiff/blob/main/INSTALL.md">INSTALL.md</a>:
+    Installation und Betrieb (englisch)</li>
+  <li><a href="https://github.com/andreas-schwenk/EmptyDiff/blob/main/CHANGELOG.md">CHANGELOG.md</a>:
+    was das System kann</li>
+</ul>
+<p>
+  Zum Namen: Wenn bei <code>diff</code> nichts abweicht, ist der Unterschied
+  leer. Dann gibt es den Haken. Das ist nicht wörtlich gemeint: Der Haken
+  heißt nur, dass die Tests der Lehrenden bestanden sind.
+</p>
+</main>
+
+<footer>
+  <p>
+    &copy; 2026 Andreas Schwenk, Lizenz GPLv3. Teile des Codes sind mit Hilfe
+    von KI (Claude, Anthropic) entstanden.
+    <a href="https://arts-and-sciences.com">arts-and-sciences.com</a>
+  </p>
+  <p>
+    Diese Seite setzt keine Cookies, lädt nichts von Dritten und sammelt
+    keine Daten. Eine Installation von EmptyDiff hat ihre eigene
+    Datenschutzerklärung; für sie ist der Betreiber verantwortlich.
+  </p>
+</footer>
+</body>
+</html>

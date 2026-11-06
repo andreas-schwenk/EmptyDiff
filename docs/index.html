@@ -1,0 +1,226 @@
+<!doctype html>
+<!--
+  Copyright (C) 2026 Andreas Schwenk <schwenk@member.fsf.org>
+  Created in part with AI help (Claude, Anthropic).
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EmptyDiff</title>
+  <meta name="description" content="EmptyDiff checks submissions in programming lab courses automatically. Free software for your own Linux server.">
+  <link rel="alternate" hreflang="de" href="de.html">
+  <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="favicon/favicon.ico" sizes="16x16 32x32 48x48">
+  <link rel="apple-touch-icon" href="favicon/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="inner">
+    <img src="favicon/favicon.svg" alt="">
+    <span class="name">EmptyDiff</span>
+    <nav aria-label="Language"><a href="de.html" hreflang="de" lang="de">Deutsch</a> / <strong>English</strong></nav>
+  </div>
+</header>
+
+<main>
+<h1>EmptyDiff</h1>
+<p>
+  EmptyDiff checks submissions in programming lab courses automatically.
+  Students upload their files and see the result right away. For each lab,
+  lecturers write a testbench, a short automatic test, see all submissions and
+  keep the credit list. The check runs in a sandbox. The system runs on Linux
+  (recommended: Debian or Ubuntu) and currently checks Octave and MATLAB files
+  (<code>.m</code>). It is free software under the GPLv3.
+</p>
+<p class="links">
+  <a href="https://github.com/andreas-schwenk/EmptyDiff">Source code on GitHub</a>
+  <a class="secondary" href="#installation">Installation</a>
+</p>
+
+<h2 id="what-for">What it is for</h2>
+<p>
+  In a lab course, students hand in programs, often dozens per lab. EmptyDiff
+  takes these submissions and runs the tests that the lecturers wrote for the
+  lab right away. Students see at once what is right and what is not, and can
+  submit again (up to a configured number of attempts; the default is 7).
+  Lecturers see all submissions and a credit list.
+</p>
+<p>
+  The automatic tests do not replace reading the code. They take the routine
+  check off the supervisors.
+</p>
+
+<h2 id="students">For students</h2>
+<ol>
+  <li><strong>Log in:</strong> students enter their institution's mail address
+    and receive a one-time code by mail. There are no passwords.</li>
+  <li><strong>Upload:</strong> for each lab they upload the required files.
+    Only files with the given names are accepted. After the deadline
+    submissions are still possible and are marked as late.</li>
+  <li><strong>Check:</strong> the submission runs in a sandbox without network
+    and with limits for time and memory, one at a time.</li>
+  <li><strong>Report:</strong> after a few seconds the result is there: a tick
+    or a cross for every check, with a hint.</li>
+</ol>
+<figure>
+  <img src="img/upload.webp" width="1200" height="793" alt="Page of a lab: deadline, required files, upload field">
+  <figcaption>A lab: deadline, required files and the field for uploading.</figcaption>
+</figure>
+<figure>
+  <img src="img/report.webp" width="1200" height="753" alt="Report of a failed submission: three checks with a cross, one with a tick">
+  <figcaption>The report of a submission that fails. Every row is one check of the testbench. (The interface is shown in German here; it is also available in English.)</figcaption>
+</figure>
+
+<h2 id="lecturers">For lecturers</h2>
+<p>
+  Everything is done in the browser: create courses and labs, set the deadline
+  and the required files, write the testbench, make the lab visible to
+  students. New labs start hidden. Lecturers see all labs and can submit like
+  students to try out the testbench.
+</p>
+<figure>
+  <img src="img/lab-edit.webp" width="1200" height="1107" alt="Form for editing a lab: language, deadline, description, required files">
+  <figcaption>Setting up a lab: language, deadline, description and required files. The testbench follows below.</figcaption>
+</figure>
+
+<p>
+  A <strong>testbench</strong> is a few lines with <code>check(...)</code>
+  and <code>check_close(...)</code>. The verdict never comes from what the
+  student's program prints, but from a results file that only these two
+  functions write. A submission passes if there is at least one check, all
+  checks pass and the testbench runs to the end.
+</p>
+<pre><code>x = addone(1);
+check(x == 2, 'addone(1) returns 2', 'addone(1) does not return 2');
+check_close(addone([1 2]), [2 3], 1e-12, 'vectors work', 'vectors are wrong');</code></pre>
+
+<p>
+  Every lab has a list of its submissions. There you can read the code,
+  download a submission as a ZIP, check it again after fixing the testbench,
+  or delete it.
+</p>
+<figure>
+  <img src="img/submissions.webp" width="1200" height="920" alt="List of the submissions of a lab with student, number, time of arrival, status and buttons">
+  <figcaption>The submissions of a lab. Earlier submissions of a person are folded away.</figcaption>
+</figure>
+<p>
+  The credit list shows, for each student and lab, the result of the last
+  submission, and can be downloaded as CSV.
+</p>
+<figure>
+  <img src="img/credit.webp" width="1200" height="673" alt="Credit list: table of students and labs, passed cells green, failed cells red">
+  <figcaption>The credit list of a course.</figcaption>
+</figure>
+<p>
+  There is also: cloning a course for the next semester, backing up and
+  restoring the labs or everything, and a privacy statement that is generated
+  from the configuration. The interface is available in German and English.
+</p>
+
+<h2 id="technology">Technology and limits</h2>
+<ul>
+  <li>Python with Flask behind Apache (<code>mod_wsgi</code>), SQLite as the
+    database, one configuration file. Only packages of the distribution are
+    used: no <code>pip</code>, no Docker, no Node.</li>
+  <li>Submissions run in a <code>bubblewrap</code> sandbox without network,
+    with limits for CPU, memory, processes and output, and strictly one after
+    the other.</li>
+  <li>Data are deleted automatically after a configurable period (default 730
+    days). There are no trackers and no external resources.</li>
+  <li>Everything that depends on the programming language lives in one adapter
+    per language. Today there is only Octave/MATLAB.</li>
+  <li>The student's code and the testbench run in the same Octave process. A
+    deliberate attack on the check is hindered, but not impossible.</li>
+  <li>Because checks run one after the other, the system is meant for small to
+    medium courses. On a Raspberry Pi 4, 200 simultaneous submissions of a
+    simple task were checked after about a minute. Labs with plots, real mail
+    delivery and TLS have not been tried there yet.</li>
+  <li>There are no automatic backups. Lecturers download them in the web
+    interface.</li>
+</ul>
+
+<h2 id="installation">Installation</h2>
+<p><strong>Requirements</strong></p>
+<ul>
+  <li>A Linux server with root access and <code>apt</code>. Debian or Ubuntu
+    are recommended; so far it is tested only with Debian 13. On Ubuntu you
+    need Python 3.11 or newer (Ubuntu 24.04 and later).</li>
+  <li>A DNS name for the server and ports 80 and 443 reachable from the
+    internet for the certificate. For closed networks there are two
+    alternatives: plain HTTP, or running behind a reverse proxy (see
+    below).</li>
+  <li>An SMTP server through which the one-time codes are sent.</li>
+  <li>Unprivileged user namespaces in the kernel (the Debian default; on Ubuntu
+    24.04 AppArmor can restrict them), which <code>bubblewrap</code> needs. The
+    self-test of <code>install.sh</code> shows whether the sandbox works.</li>
+</ul>
+<p><strong>Dependencies</strong> (packages of the distribution, installed by <code>install.sh</code>)</p>
+<ul>
+  <li><code>apache2</code> and <code>libapache2-mod-wsgi-py3</code>
+    (certificates via the included <code>mod_md</code>)</li>
+  <li><code>python3</code> (3.11 or newer) and <code>python3-flask</code>; the
+    rest of the code uses only the standard library</li>
+  <li><code>bubblewrap</code> and <code>util-linux</code> (for <code>prlimit</code>)</li>
+  <li>for Octave/MATLAB: <code>octave</code>, plus <code>gnuplot-nox</code> and
+    <code>fonts-freefont-otf</code> so that plots work without a display</li>
+</ul>
+<p><strong>Steps</strong></p>
+<pre><code>sudo apt-get install -y git
+sudo git clone https://github.com/andreas-schwenk/EmptyDiff /opt/emptydiff
+cd /opt/emptydiff
+sudo ./install.sh --accept-acme-terms</code></pre>
+<p>
+  On the first run the script creates the template
+  <code>/etc/emptydiff/config.toml</code> and stops. This one configuration
+  file holds the server name, the allowed mail domains, the admins, the mail
+  server and the details for the privacy statement. Then run the script
+  again:
+</p>
+<pre><code>sudo nano /etc/emptydiff/config.toml
+sudo ./install.sh --accept-acme-terms</code></pre>
+<p>
+  The script installs the packages, creates the user <code>emptydiff</code>,
+  generates the files for Apache and systemd, checks the sandbox and starts the
+  services. An update is the same call after <code>git pull</code>.
+</p>
+<p>
+  Without a public DNS name there are two ways: <code>base_url</code> with
+  <code>http://</code> for a closed test network (codes and sessions are then
+  unencrypted), or running behind a reverse proxy that ends TLS and offers the
+  system under a path of its site. Both are described in
+  <a href="https://github.com/andreas-schwenk/EmptyDiff/blob/main/INSTALL.md">INSTALL.md</a>,
+  together with operation, updates and notes on the Raspberry Pi.
+</p>
+
+<h2 id="more">More</h2>
+<ul>
+  <li><a href="https://github.com/andreas-schwenk/EmptyDiff">Source code on GitHub</a></li>
+  <li><a href="https://github.com/andreas-schwenk/EmptyDiff/blob/main/INSTALL.md">INSTALL.md</a>:
+    installation and operation</li>
+  <li><a href="https://github.com/andreas-schwenk/EmptyDiff/blob/main/CHANGELOG.md">CHANGELOG.md</a>:
+    what the system can do</li>
+</ul>
+<p>
+  About the name: when <code>diff</code> finds no difference, its output is
+  empty. Then there is the tick. This is not meant literally: the tick only
+  means that the lecturers' tests passed.
+</p>
+</main>
+
+<footer>
+  <p>
+    &copy; 2026 Andreas Schwenk, licensed under the GPLv3. Parts of the code
+    were written with the help of AI (Claude, Anthropic).
+    <a href="https://arts-and-sciences.com">arts-and-sciences.com</a>
+  </p>
+  <p>
+    This page sets no cookies, loads nothing from third parties and collects
+    no data. An installation of EmptyDiff has its own privacy statement; the
+    operator is responsible for it.
+  </p>
+</footer>
+</body>
+</html>
