@@ -42,7 +42,7 @@ sudo apt-get install -y git
 sudo git clone https://github.com/andreas-schwenk/emptydiff /opt/emptydiff
 cd /opt/emptydiff
 sudo ./install.sh --accept-acme-terms   # first run creates /etc/emptydiff/config.toml and stops
-sudo nano /etc/emptydiff/config.toml      # server name, allowed domains, admins, mail, privacy details
+sudo nano /etc/emptydiff/config.toml      # any editor; adjust the contents: server name, allowed domains, admins, mail, privacy details (example in INSTALL.md)
 sudo ./install.sh --accept-acme-terms   # installs packages, Apache, services; ends with a health check
 ```
 

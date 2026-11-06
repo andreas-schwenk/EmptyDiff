@@ -176,11 +176,25 @@ sudo ./install.sh --accept-acme-terms</code></pre>
   On the first run the script creates the template
   <code>/etc/emptydiff/config.toml</code> and stops. This one configuration
   file holds the server name, the allowed mail domains, the admins, the mail
-  server and the details for the privacy statement. Then run the script
-  again:
+  server and the details for the privacy statement. Open it in any editor
+  (for example <code>nano</code>) and change the contents to your values. An
+  excerpt as an example, with placeholder values:
 </p>
-<pre><code>sudo nano /etc/emptydiff/config.toml
-sudo ./install.sh --accept-acme-terms</code></pre>
+<pre><code>base_url = "https://emptydiff.example.org"
+
+[auth]
+allowed_domains = ["student.example.edu"]
+admins = ["lecturer@example.edu"]
+
+[mail]
+host = "smtp.example.org"
+sender = "emptydiff@example.org"
+
+[privacy]
+controller = "Example University"
+contact_email = "lecturer@example.edu"</code></pre>
+<p>Then run the script again:</p>
+<pre><code>sudo ./install.sh --accept-acme-terms</code></pre>
 <p>
   The script installs the packages, creates the user <code>emptydiff</code>,
   generates the files for Apache and systemd, checks the sandbox and starts the

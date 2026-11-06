@@ -18,10 +18,27 @@ cd /opt/emptydiff
 sudo ./install.sh --accept-acme-terms
 ```
 
-On the first run the script creates `/etc/emptydiff/config.toml` as a template and stops. Fill in this **one** configuration file (server name, allowed domains, admins, mail server, privacy details), then run it again:
+On the first run the script creates `/etc/emptydiff/config.toml` as a template and stops. Open this **one** configuration file in an editor of your choice and change its contents to your values: server name, allowed domains, admins, mail server, privacy details. An excerpt as an example (the values are placeholders, use your own; all settings are in `config.example.toml`):
+
+```toml
+base_url = "https://emptydiff.example.org"
+
+[auth]
+allowed_domains = ["student.example.edu"]
+admins = ["lecturer@example.edu"]
+
+[mail]
+host = "smtp.example.org"
+sender = "emptydiff@example.org"
+
+[privacy]
+controller = "Example University"
+contact_email = "lecturer@example.edu"
+```
+
+Then run the script again:
 
 ```bash
-sudo nano /etc/emptydiff/config.toml
 sudo ./install.sh --accept-acme-terms
 ```
 
