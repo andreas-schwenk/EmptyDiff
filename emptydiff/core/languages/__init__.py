@@ -2,8 +2,7 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Programming languages that a lab can use (DESIGN.md section 20.1).
-Standard library only.
+"""Programming languages that a lab can use. Standard library only.
 
 Everything that depends on the language of a lab lives in one adapter
 class per language (see `Language`): how the testbench is put together

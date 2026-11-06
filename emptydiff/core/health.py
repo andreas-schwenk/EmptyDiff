@@ -2,8 +2,7 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Health check for operations (DESIGN.md section 13). Standard library
-only.
+"""Health check for operations. Standard library only.
 
 Returns a list of problem identifiers (empty = all fine):
   db      database not readable

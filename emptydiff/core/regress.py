@@ -4,7 +4,7 @@
 
 """Regression test: grade recorded student files against the testbenches
 of the labs in the database and compare the verdict with the one
-recorded with the files (DESIGN.md section 15).
+recorded with the files.
 
 Expects this directory layout (the lab directories carry the names of
 labs in the database):

@@ -2,8 +2,7 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Command line: python3 -m emptydiff <command>. See DESIGN.md, section
-4."""
+"""Command line: python3 -m emptydiff <command>."""
 
 import argparse
 import os

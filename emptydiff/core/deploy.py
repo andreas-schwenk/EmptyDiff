@@ -2,8 +2,8 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Generate operational files from the templates in deploy/ (DESIGN.md
-section 13). Standard library only.
+"""Generate operational files from the templates in deploy/. Standard
+library only.
 
 install.sh calls `python3 -m emptydiff deploy-render` and copies the
 result to the target locations. All values come from

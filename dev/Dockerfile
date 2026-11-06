@@ -2,7 +2,7 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# Development environment (NOT part of the production system, see DESIGN.md 13.1).
+# Development environment (NOT part of the production system).
 # Mirrors the Debian 13 VM: same package sources for Python, Flask, bubblewrap and Octave.
 # gnuplot-nox and fonts-freefont-otf: without a display Octave only knows the gnuplot toolkit and
 # needs a font; without both, figure/plot fail in student code ("no graphics

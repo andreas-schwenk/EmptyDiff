@@ -2,7 +2,7 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Retention and deletion (DESIGN.md section 18). Standard library only.
+"""Retention and deletion. Standard library only.
 
 The submissions of a lab are deleted `retention_days` days after the
 later of the deadline and the last submission. The lab itself (task,

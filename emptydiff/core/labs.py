@@ -2,8 +2,7 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Lab and course management (DESIGN.md section 10): create, edit,
-activate, clone, delete.
+"""Lab and course management: create, edit, activate, clone, delete.
 
 Standard library only. Errors with a message readable by lecturers are
 LabError.

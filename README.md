@@ -50,7 +50,7 @@ See [INSTALL.md](INSTALL.md) for updates, operation, backups and troubleshooting
 
 ## Security
 
-What the system does for it (details in [DESIGN.md](DESIGN.md), section 14):
+What the system does for it:
 
 - **Login:** one-time codes by mail instead of passwords (8 characters, 15 minutes, single use, stored only as a hash, five tries per code). Only addresses of the allowed domains and the admin addresses get a mail. Requests for codes are rate-limited per address and per IP address, with a cooldown, a hidden form field and a minimum form time against bots. No captcha and no third-party service.
 - **Web application:** CSRF token on every form, signed session cookie (`HttpOnly`, `Secure` over https, `SameSite`), strict Content-Security-Policy (no inline scripts or styles, no external resources), `nosniff`, HSTS (https), no indexing by search engines, escaped output. Students see only their own submissions; the administration is for the configured admins only.
@@ -79,7 +79,7 @@ Tests also run natively with `python3 -m unittest discover -s tests` (those need
 - [Website](https://andreas-schwenk.github.io/EmptyDiff/): what the system is for, screenshots, installation (English and German; the source is in `docs/`)
 - [INSTALL.md](INSTALL.md): installation and operation (English)
 - [CHANGELOG.md](CHANGELOG.md): what the system can do
-- [DESIGN.md](DESIGN.md): design decisions and details (German)
+- [TODO.md](TODO.md): open points and ideas
 - [config.example.toml](config.example.toml): all settings with their defaults
 
 ## License

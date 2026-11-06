@@ -2,8 +2,7 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Backup: export and import as ZIP (DESIGN.md section 19). Standard
-library only.
+"""Backup: export and import as ZIP. Standard library only.
 
 Two kinds of archives (`manifest.json`, `kind`):
   full  all labs (language, configuration, testbench, helper and

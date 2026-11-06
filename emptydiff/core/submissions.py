@@ -2,8 +2,7 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Submissions: validation, storage and queries (DESIGN.md section
-7)."""
+"""Submissions: validation, storage and queries."""
 
 import hashlib
 import os

@@ -2,8 +2,7 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Login with a one-time code (DESIGN.md section 6). Standard library
-only.
+"""Login with a one-time code. Standard library only.
 
 The code is sent by mail to an address in the allowed domains and proves
 access to the mailbox. Only a SHA-256 hash is stored. Optionally ("stay

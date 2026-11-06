@@ -2,8 +2,7 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Texts in several languages (DESIGN.md section 21). Standard library
-only.
+"""Texts in several languages. Standard library only.
 
 All texts of the interface live in the files `emptydiff/strings/*.json`,
 one per area (common, student, admin, forms, backup, privacy, errors):

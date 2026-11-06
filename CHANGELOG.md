@@ -17,4 +17,4 @@ First version, a rewrite of an older mail-based submission system.
 - **Code style:** the Python source follows PEP 8 (79 columns, comments and docstrings 72), formatted with black and checked with pycodestyle (`dev/docker.sh lint` and `format`).
 - **Accessibility and design:** high contrast, square flat design, skip link, live announcement of results, no external resources, `noindex`.
 
-Known limits: student code and testbench run in the same Octave process, so a deliberate attack on the check is hindered but not impossible (see `DESIGN.md`, section 8); only a clean install on Debian 13 is tested, and the full `install.sh` run on a real server is still pending.
+Known limits: student code and testbench run in the same Octave process, so a deliberate attack on the check is hindered but not impossible; only a clean install on Debian 13 is tested, and the full `install.sh` run on a real server is still pending.

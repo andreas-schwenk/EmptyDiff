@@ -2,8 +2,7 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Running a testbench in the sandbox (DESIGN.md section 8). Standard
-library only.
+"""Running a testbench in the sandbox. Standard library only.
 
 A testbench consists of a body (the statements of the testbench) and
 helper functions. What the program that runs it looks like depends on

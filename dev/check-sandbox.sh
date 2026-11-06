@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # Checks that the bubblewrap sandbox for Octave works and has the expected
-# properties (DESIGN.md section 8). Runs in the dev/ container or on the Debian VM.
+# properties. Runs in the dev/ container or on the Debian VM.
 # The bwrap command line in sandbox() is the template for the grader.
 set -u
 

@@ -2,7 +2,7 @@
 -- Created in part with AI help (Claude, Anthropic).
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
--- Schema version 1 (see DESIGN.md, section 9)
+-- Schema version 1 (later versions are migrations in core/db.py)
 
 CREATE TABLE lab (
   name TEXT PRIMARY KEY,                   -- e.g. 'am26-1a'

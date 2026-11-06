@@ -2,8 +2,7 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Sending mail with two backends (DESIGN.md 6.1). Standard library only
-(smtplib).
+"""Sending mail with two backends. Standard library only (smtplib).
 
 'smtp': real delivery through an SMTP server (host, port, security
 none/starttls/ssl, optional login). 'simulate': nothing is sent; the

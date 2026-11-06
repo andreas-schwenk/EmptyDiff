@@ -2,8 +2,8 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Credit list (DESIGN.md section 11): student x lab of a course, the
-last submission counts."""
+"""Credit list: student x lab of a course, the last submission
+counts."""
 
 import csv
 import io

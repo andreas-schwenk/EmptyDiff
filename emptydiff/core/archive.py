@@ -2,8 +2,7 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Archive of a whole lab as a ZIP file (DESIGN.md section 18). Standard
-library only.
+"""Archive of a whole lab as a ZIP file. Standard library only.
 
 Layout (everything below `<lab>/`):
   README.txt, lab.json (configuration), testbench<ext>, helpers<ext>,

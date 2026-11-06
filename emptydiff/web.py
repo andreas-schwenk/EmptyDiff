@@ -2,8 +2,8 @@
 # Created in part with AI help (Claude, Anthropic).
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""The only file that knows Flask. Only the core scope of Flask (see
-DESIGN.md 5)."""
+"""The only file that knows Flask. Only the core scope of Flask (no
+extensions)."""
 
 import hashlib
 import hmac
