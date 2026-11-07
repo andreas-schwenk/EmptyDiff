@@ -205,6 +205,43 @@ class ConfigTest(unittest.TestCase):
         with mock.patch.dict(os.environ, {"EMPTYDIFF_DEV": "1"}):
             self.assertEqual(config.load(path)["mail"]["backend"], "simulate")
 
+    def test_simulate_in_production_needs_the_insecure_opt_in(self):
+        path = _write(
+            '[mail]\nbackend = "simulate"\nsimulate_insecure = true\n'
+        )
+        with mock.patch.dict(os.environ, {"EMPTYDIFF_DEV": ""}):
+            self.assertEqual(config.load(path)["mail"]["backend"], "simulate")
+        path = _write('[mail]\nsimulate_insecure = "yes"\n')
+        with mock.patch.dict(os.environ, {"EMPTYDIFF_DEV": ""}):
+            with self.assertRaises(config.ConfigError):
+                config.load(path)
+
+    def test_own_certificate_needs_both_files_and_https(self):
+        both = '[tls]\ncertificate_file = "/c.pem"\nkey_file = "/k.pem"\n'
+        cases = (
+            (  # only one of the two files
+                '[tls]\ncertificate_file = "/c.pem"\n',
+                False,
+            ),
+            ('base_url = "http://a.invalid"\n' + both, False),  # no https
+            (  # a proxy ends TLS itself
+                'base_url = "https://a.invalid"\n'
+                '[proxy]\naddresses = ["192.0.2.1"]\n' + both,
+                False,
+            ),
+            ('base_url = "https://a.invalid"\n' + both, True),
+        )
+        for text, valid in cases:
+            with self.subTest(text=text):
+                path = _write(text)
+                with mock.patch.dict(os.environ, {"EMPTYDIFF_DEV": "1"}):
+                    if valid:
+                        cfg = config.load(path)
+                        self.assertTrue(config.uses_own_certificate(cfg))
+                    else:
+                        with self.assertRaises(config.ConfigError):
+                            config.load(path)
+
     def test_no_sandbox_requires_dev(self):
         path = _write('[grader]\nsandbox = "none"\n')
         with mock.patch.dict(os.environ, {"EMPTYDIFF_DEV": ""}):

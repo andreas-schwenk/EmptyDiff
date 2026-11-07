@@ -30,7 +30,7 @@
   <header class="topbar">
     <div class="topbar-inner">
       <a class="brand" href="{{ url_for('index') }}"><span class="brand-mark">{% include "_brand_mark.html" %}</span>EmptyDiff</a>
-      {% if dev %}<span class="devbadge" title="{{ t('dev.badge_title') }}">DEV</span>{% endif %}
+      {% if dev %}<span class="devbadge" title="{{ t('dev.badge_title') }}">DEV</span>{% elif sim_insecure %}<span class="devbadge" title="{{ t('dev.sim_badge_title') }}">{{ t('dev.sim_badge') }}</span>{% endif %}
       {% if user %}
       <nav class="topnav" aria-label="{{ t('nav.main') }}">
         <a href="{{ url_for('index') }}"{% if request.endpoint in ('index', 'lab', 'submission') and not nav_admin %} aria-current="page"{% endif %}>{{ t('nav.labs') }}</a>

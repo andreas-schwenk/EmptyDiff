@@ -22,6 +22,11 @@ admins = ["dozent@example.edu"]                            # lecturers/superviso
 # (for example https://pool.example.org/lab); this server answers only the proxy. See INSTALL.md.
 # addresses = ["192.0.2.20"]
 
+[tls]
+# Own certificate instead of mod_md (INSTALL.md): server certificate followed by the intermediate certificates, and the key.
+# certificate_file = "/etc/emptydiff/tls/fullchain.pem"
+# key_file = "/etc/emptydiff/tls/server.key"
+
 [languages]
 # enabled = ["octave"]      # the programming languages this server offers (install.sh installs their packages)
 
@@ -33,6 +38,8 @@ security = "none"           # "none", "starttls" or "ssl"
 # user = ""
 # password = ""
 sender = "emptydiff@example.org"
+# For a first test without real data only (everybody who asks for a login code sees it; see INSTALL.md):
+# backend = "simulate" and simulate_insecure = true
 
 [privacy]
 controller = ""

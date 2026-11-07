@@ -101,11 +101,15 @@ install -m 0644 "$STAGE/logrotate/emptydiff" /etc/logrotate.d/emptydiff
 install -m 0644 "$STAGE/apache/emptydiff.conf" /etc/apache2/sites-available/emptydiff.conf
 
 say "Setting up Apache"
-# https (mod_md certificate), plain http for closed networks, or behind a reverse proxy that ends TLS:
+# https (mod_md certificate or a certificate file of the operator), plain http for closed networks, or behind a reverse proxy that ends TLS:
 # the generated site names its mode
 MODE="$(sed -n 's/^# mode: //p' "$STAGE/apache/emptydiff.conf")"
 case "$MODE" in
   https) a2enmod ssl md headers wsgi >/dev/null ;;
+  tls)
+    a2enmod ssl headers wsgi >/dev/null
+    a2dissite 000-default >/dev/null 2>&1 || true
+    ;;
   http|proxy)
     a2enmod headers wsgi >/dev/null
     # Apache's own default site would answer requests by IP address or an unknown name
@@ -143,6 +147,10 @@ else
 fi
 case "$MODE" in
   http) echo "Warning: plain http (base_url starts with http://): login codes and cookies are not encrypted. Use this only in a closed, trusted network." >&2 ;;
+  tls) echo "https runs with the certificate files from tls.* in the configuration. When the certificate is renewed, replace the files and run: systemctl reload apache2" ;;
   proxy) echo "This server answers only the reverse proxy (proxy.addresses). Keep its firewall closed for everyone else; the proxy ends TLS and must restrict who may reach the path." ;;
   *) echo "The server must be reachable on ports 80 and 443 so that mod_md can issue the certificate." ;;
 esac
+if grep -Eq '^[[:space:]]*backend[[:space:]]*=[[:space:]]*"simulate"' "$CONFIG"; then
+  echo "Warning: mail.backend = \"simulate\": no mail is sent, login codes appear on the page and anyone can log in as any allowed address. Use this only for tests without real data; switch to \"smtp\" before the first lab." >&2
+fi

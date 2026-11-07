@@ -69,8 +69,13 @@ DEFAULTS = {
     # sending login codes via Python (smtplib); host and sender are
     # required in production
     "mail": {
-        # "smtp" or "simulate" (simulate only with EMPTYDIFF_DEV=1)
+        # "smtp" or "simulate" (simulate: only with EMPTYDIFF_DEV=1 or
+        # with simulate_insecure below)
         "backend": "smtp",
+        # Test installations only: allow "simulate" in production. No
+        # mail is sent; the login code is shown on the page to anyone
+        # who asks for one, so anyone can log in as any allowed address.
+        "simulate_insecure": False,
         "host": "",  # SMTP server
         "port": 25,  # 25 (relay), 587 (starttls) or 465 (ssl)
         # "none" (plain text, e.g. internal relay), "starttls" or "ssl"
@@ -96,6 +101,14 @@ DEFAULTS = {
     # for tampering with the check or reading it). The defaults come
     # from the language adapters.
     "languages": languages.defaults(),
+    # Own certificate for https (issued by a certificate authority of
+    # the institution) instead of mod_md. Both files empty: mod_md.
+    "tls": {
+        # server certificate followed by the intermediate certificates
+        # (PEM, "full chain")
+        "certificate_file": "",
+        "key_file": "",  # private key (PEM)
+    },
     "proxy": {
         # Addresses or networks of the reverse proxy in front of this
         # server (it ends TLS and may serve the system under a path of
@@ -142,10 +155,15 @@ def _validate(cfg):
     backend = cfg["mail"]["backend"]
     if backend not in ("smtp", "simulate"):
         raise ConfigError(f"mail.backend: unknown value {backend!r}")
-    if backend == "simulate" and not is_dev():
+    insecure = cfg["mail"]["simulate_insecure"]
+    if not isinstance(insecure, bool):
+        raise ConfigError("mail.simulate_insecure: true or false expected")
+    if backend == "simulate" and not (is_dev() or insecure):
         raise ConfigError(
             "mail.backend = 'simulate' is only allowed with EMPTYDIFF_DEV=1 "
-            "(otherwise login codes would be publicly visible)"
+            "or, for a test installation, with mail.simulate_insecure = "
+            "true (login codes are then shown on the page to anyone who "
+            "asks for one)"
         )
     language = cfg["ui"]["default_language"]
     if language not in i18n.languages():
@@ -241,6 +259,7 @@ def _validate(cfg):
                 "non-empty strings expected"
             )
     _validate_proxy(cfg)
+    _validate_tls(cfg)
     sandbox = cfg["grader"]["sandbox"]
     if sandbox not in ("bwrap", "none"):
         raise ConfigError(f"grader.sandbox: unknown value {sandbox!r}")
@@ -293,6 +312,34 @@ def _validate_proxy(cfg):
             f"base_url: the path {prefix!r} is not valid (lower case "
             "letters, digits, - and _, for example /lab)"
         )
+
+
+def uses_own_certificate(cfg):
+    """True if https runs with a certificate file of the operator
+    (`[tls]`) instead of a mod_md certificate."""
+    return bool(str(cfg["tls"]["certificate_file"]).strip())
+
+
+def _validate_tls(cfg):
+    tls = cfg["tls"]
+    for key in ("certificate_file", "key_file"):
+        if not isinstance(tls[key], str):
+            raise ConfigError(f"tls.{key}: file name expected")
+        tls[key] = tls[key].strip()
+    if bool(tls["certificate_file"]) != bool(tls["key_file"]):
+        raise ConfigError(
+            "tls: certificate_file and key_file belong together; set "
+            "both or neither"
+        )
+    if uses_own_certificate(cfg):
+        if not uses_https(cfg):
+            raise ConfigError(
+                "tls: needs a base_url that starts with https://"
+            )
+        if cfg["proxy"]["addresses"]:
+            raise ConfigError(
+                "tls: not together with proxy.addresses (the proxy ends TLS)"
+            )
 
 
 def client_address(cfg, remote_addr, forwarded_for=""):

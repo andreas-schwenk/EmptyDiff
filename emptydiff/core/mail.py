@@ -5,10 +5,10 @@
 """Sending mail with two backends. Standard library only (smtplib).
 
 'smtp': real delivery through an SMTP server (host, port, security
-none/starttls/ssl, optional login). 'simulate': nothing is sent; the
-mail is kept in the memory of the process and shown once by the web
-interface as a modal (no database, no history). Only with
-EMPTYDIFF_DEV=1.
+none/starttls/ssl, optional login). 'simulate': nothing is sent; send()
+returns the mail and the web interface shows it once to the person who
+asked for it, as a modal (no database, no history). Only with
+EMPTYDIFF_DEV=1 or, for test installations, mail.simulate_insecure.
 """
 
 import smtplib
@@ -26,26 +26,35 @@ class MailError(Exception):
 
 SIMULATED = deque(
     maxlen=20
-)  # dev mode only: mails not yet shown (recipient, subject, text)
+)  # dev mode only: the mails sent so far (recipient, subject, text)
 
 
 def pop_simulated():
-    """Return the simulated mails not yet shown and empty the queue."""
+    """Return the simulated mails of dev mode and empty the queue."""
     mails = []
     while SIMULATED:
         mails.append(SIMULATED.popleft())
     return mails
 
 
+def simulates(cfg):
+    """True if no mail is sent and the page shows it instead."""
+    return cfg["mail"]["backend"] == "simulate"
+
+
 def send(cfg, to, subject, body):
+    """Send a mail. A simulated mail is returned (None otherwise)."""
     backend = cfg["mail"]["backend"]
     if backend == "simulate":
-        if not config.is_dev():
+        if not (config.is_dev() or cfg["mail"]["simulate_insecure"]):
             raise MailError(
-                "Mail simulation is only allowed with EMPTYDIFF_DEV=1"
+                "Mail simulation is only allowed with EMPTYDIFF_DEV=1 "
+                "or mail.simulate_insecure = true"
             )
-        SIMULATED.append({"recipient": to, "subject": subject, "body": body})
-        return
+        simulated = {"recipient": to, "subject": subject, "body": body}
+        if config.is_dev():
+            SIMULATED.append(simulated)
+        return simulated
     if backend != "smtp":
         raise MailError(f"unbekanntes Mail-Backend {backend!r}")
 

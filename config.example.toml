@@ -27,7 +27,8 @@ admins = ["dozent@example.edu"]                            # lecturers/superviso
 # max_attempts = 7          # submissions per student and lab (the same for all labs)
 
 [mail]
-backend = "simulate"        # only with EMPTYDIFF_DEV=1; "smtp" in production
+backend = "simulate"        # only with EMPTYDIFF_DEV=1 (or, for tests without real data, simulate_insecure = true); "smtp" in production
+# simulate_insecure = true  # production test installation: the login code appears on the page for everybody who asks
 # Sending via Python (smtplib). Example for production:
 # backend = "smtp"
 # host = "smtp.example.org"
@@ -48,6 +49,11 @@ sandbox = "bwrap"           # "none" only with EMPTYDIFF_DEV=1 (e.g. natively on
 # under a path like https://pool.example.org/lab, only for the campus network): the proxy's addresses.
 # Then base_url is the public https address including the path; see INSTALL.md.
 # addresses = ["192.0.2.20"]
+
+[tls]
+# Own certificate for https instead of mod_md (see INSTALL.md): server certificate followed by the intermediate certificates, and the key.
+# certificate_file = "/etc/emptydiff/tls/fullchain.pem"
+# key_file = "/etc/emptydiff/tls/server.key"
 
 [languages]
 enabled = ["octave"]        # the programming languages this server offers (install.sh installs their packages)

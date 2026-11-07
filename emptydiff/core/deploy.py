@@ -33,10 +33,11 @@ OUTPUTS = {
 # its file name is that of the mount unit, which follows from the data
 # directory
 MOUNT_TEMPLATE = "emptydiff-run.mount.in"
-# Apache has one variant per URL scheme; the directives both share live
-# in one file that is inserted at @VHOST_BODY@
+# Apache has one variant per mode; the directives all share live in one
+# file that is inserted at @VHOST_BODY@
 APACHE_TEMPLATE = {
     "https": "apache.conf.in",
+    "tls": "apache-tls.conf.in",
     "http": "apache-http.conf.in",
     "proxy": "apache-proxy.conf.in",
 }
@@ -154,6 +155,22 @@ def values(cfg, app_dir, accept_acme_terms=False):
             f"not {cfg['base_url']!r}"
         )
     mode = "proxy" if proxies else scheme
+    cert_file = key_file = ""
+    if mode == "https" and config.uses_own_certificate(cfg):
+        mode = "tls"
+        cert_file = cfg["tls"]["certificate_file"]
+        key_file = cfg["tls"]["key_file"]
+        for key, path in (
+            ("certificate_file", cert_file),
+            ("key_file", key_file),
+        ):
+            if not PATH_RE.match(path):
+                raise DeployError(
+                    f"tls.{key}: invalid path {path!r} (absolute, only "
+                    "letters, digits and / . _ -)"
+                )
+            if not os.path.isfile(path):
+                raise DeployError(f"tls.{key}: {path} does not exist")
     if mode == "https" and not accept_acme_terms:
         raise DeployError(
             "The terms of service of the certificate authority "
@@ -203,6 +220,8 @@ def values(cfg, app_dir, accept_acme_terms=False):
         ),
         "LOG_DAYS": str(log_days),
         "MD_AGREEMENT": "accepted",
+        "CERT_FILE": cert_file,
+        "KEY_FILE": key_file,
     }
 
 

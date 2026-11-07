@@ -18,3 +18,4 @@ First version, a rewrite of an older mail-based submission system.
 - **Accessibility and design:** high contrast, square flat design, skip link, live announcement of results, no external resources, `noindex`.
 
 Known limits: student code and testbench run in the same Octave process, so a deliberate attack on the check is hindered but not impossible; only a clean install on Debian 13 is tested, and the full `install.sh` run on a real server is still pending.
+- **Test installations and own certificates:** `mail.backend = "simulate"` also works in production when `mail.simulate_insecure = true` is set (the login code is shown to the person who asked for it, in the browser session only; badge and `install.sh` warning); `[tls] certificate_file` and `key_file` run https with a certificate of the operator instead of `mod_md` (no ACME, redirect and HSTS).

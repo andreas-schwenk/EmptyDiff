@@ -1,6 +1,6 @@
 # Installation and operation
 
-EmptyDiff runs on a Debian server (tested on Debian 13) with Apache (`mod_wsgi`, certificates via `mod_md`), a worker service for grading and a daily deletion run. Only Debian packages are used (no `pip`, no Docker, no Node).
+EmptyDiff runs on a Debian server (tested on Debian 13) with Apache (`mod_wsgi`, certificates via `mod_md` or your own certificate files), a worker service for grading and a daily deletion run. Only Debian packages are used (no `pip`, no Docker, no Node).
 
 ## Requirements
 
@@ -67,6 +67,36 @@ base_url = "http://192.0.2.10"
 **Login codes, session cookies and submissions travel unencrypted in this mode. Use it only in a closed, trusted network, never on the internet.** The installation prints a warning, disables Apache's default site (otherwise it would answer requests by IP address) and keeps everything else. Switching to https later means changing `base_url` and running `install.sh --accept-acme-terms` again.
 
 Without a mail server, request a code on the login page (it reports that the mail could not be sent but still opens the page for the code), then print the code with `python3 -m emptydiff issue-code <address>` (see Operation).
+
+### Simulated mail for a first test
+
+For a test installation without any real data, mail can be simulated: nothing is sent, the login code appears in a dialog on the page, so nobody has to read it out on the server.
+
+```toml
+[mail]
+backend = "simulate"
+simulate_insecure = true
+```
+
+**Everybody who asks for a code sees it, so anybody can log in as any allowed address, administrators included.** That is why the second line is required: without it a production start refuses `simulate` (it is allowed without it only with `EMPTYDIFF_DEV=1`). The pages carry a "MAIL TEST" badge and `install.sh` prints a warning. Switch to `backend = "smtp"` (and remove `simulate_insecure`) before real students log in, then run `sudo systemctl restart apache2`.
+
+## Your own certificate (no internet access for `mod_md`)
+
+If the server is reachable only inside a network but may have its own name, an institution's certificate authority can issue the certificate. Put the files on the server and name them in the configuration:
+
+```toml
+base_url = "https://emptydiff.example.org"
+
+[tls]
+certificate_file = "/etc/emptydiff/tls/fullchain.pem"   # server certificate followed by the intermediate certificates
+key_file = "/etc/emptydiff/tls/server.key"
+```
+
+- Both files are in PEM format. `certificate_file` is the server certificate first, then the intermediate certificates of the authority (`cat server.pem intermediate.pem > fullchain.pem`).
+- The key must be readable only by root (`chmod 600`, `chown root:root`); Apache reads it as root at start.
+- `install.sh` (without `--accept-acme-terms`) checks that both files exist, generates a site with the redirect from http to https and HSTS, and does not use `mod_md`.
+- Renew by replacing the two files and running `sudo systemctl reload apache2`.
+- Not together with `[proxy]` (then the proxy ends TLS).
 
 ## Under a path, behind a reverse proxy
 

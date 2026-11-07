@@ -443,6 +443,40 @@ class LoginTest(WebTestCase):
                 "<dialog", client.get("/login").get_data(as_text=True)
             )
 
+    def test_simulated_mail_in_production_is_shown_to_its_requester_only(self):
+        from emptydiff.web import create_app
+
+        with mock.patch.dict(os.environ, {"EMPTYDIFF_DEV": ""}):
+            cfg = dict(self.cfg, data_dir=os.path.join(self.tmp, "sim"))
+            cfg["mail"] = dict(
+                self.cfg["mail"], backend="simulate", simulate_insecure=True
+            )
+            app = create_app(cfg)
+            client, other = app.test_client(), app.test_client()
+            page = client.get("/login").get_data(as_text=True)
+            self.assertIn("MAIL-TEST", page)  # the badge says so
+            self.assertNotIn(">DEV<", page)
+            time.sleep(0.01)  # the form must not come back faster than...
+            with mock.patch("time.time", return_value=time.time() + 60):
+                resp = client.post(
+                    "/login",
+                    data={
+                        "email": STUDENT,
+                        "csrf_token": self.token(client),
+                    },
+                    follow_redirects=True,
+                )
+            page = resp.get_data(as_text=True)
+            self.assertIn("<dialog data-autoshow open>", page)
+            self.assertRegex(page, CODE_RE)
+            self.assertEqual(len(mail.SIMULATED), 0)  # no shared queue
+            # once only, and never for another visitor
+            for c in (client, other):
+                self.assertNotIn(
+                    "<dialog",
+                    c.get("/login/verify").get_data(as_text=True),
+                )
+
     def test_production_start_requires_mandatory_settings(self):
         from emptydiff.core.config import ConfigError
         from emptydiff.web import create_app

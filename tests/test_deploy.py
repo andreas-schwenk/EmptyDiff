@@ -331,6 +331,7 @@ class RenderTest(DeployTestCase):
     def test_the_apache_site_names_its_mode_for_install_sh(self):
         for cfg, acme, mode in (
             (prod_cfg(), True, "https"),
+            (self.tls_cfg()[0], False, "tls"),
             (prod_cfg(base_url="http://192.0.2.10"), False, "http"),
             (self.proxy_cfg(), False, "proxy"),
         ):
@@ -340,6 +341,39 @@ class RenderTest(DeployTestCase):
                     self.read("apache/emptydiff.conf"),
                     rf"(?m)^# mode: {mode}$",
                 )
+
+    def tls_cfg(self, **over):
+        cert = os.path.join(self.out, "cert.pem")
+        key = os.path.join(self.out, "key.pem")
+        for path in (cert, key):
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("x")
+        cfg = prod_cfg(**over)
+        cfg["tls"].update(certificate_file=cert, key_file=key)
+        return cfg, cert, key
+
+    def test_own_certificate_replaces_mod_md(self):
+        cfg, cert, key = self.tls_cfg()
+        self.render(cfg, accept_acme_terms=False)  # no ACME terms needed
+        conf = self.read("apache/emptydiff.conf")
+        self.assertRegex(conf, r"(?m)^# mode: tls$")
+        self.assertIn(f"SSLCertificateFile {cert}", conf)
+        self.assertIn(f"SSLCertificateKeyFile {key}", conf)
+        self.assertIn("Redirect permanent / https://", conf)
+        self.assertIn("Strict-Transport-Security", conf)
+        self.assertIn("WSGIScriptAlias / ", conf)
+        for acme in ("MDomain", "MDCertificateAgreement"):
+            self.assertNotIn(acme, conf)
+
+    def test_own_certificate_files_must_exist_and_be_plain_paths(self):
+        cfg, cert, key = self.tls_cfg()
+        cfg["tls"]["key_file"] = "/nonexistent/key.pem"
+        with self.assertRaises(deploy.DeployError) as ctx:
+            self.render(cfg, accept_acme_terms=False)
+        self.assertIn("tls.key_file", str(ctx.exception))
+        cfg["tls"]["key_file"] = key + " ;rm"
+        with self.assertRaises(deploy.DeployError):
+            self.render(cfg, accept_acme_terms=False)
 
     def test_behind_a_proxy_the_public_address_is_https(self):
         cfg = self.proxy_cfg()

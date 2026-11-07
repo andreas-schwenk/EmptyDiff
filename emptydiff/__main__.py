@@ -272,7 +272,7 @@ def cmd_mail_test(args):
         )
     )
     try:
-        mail.send(
+        simulated = mail.send(
             cfg,
             args.email,
             "EmptyDiff: test mail",
@@ -281,9 +281,7 @@ def cmd_mail_test(args):
         )
     except mail.MailError as e:
         sys.exit(f"Error: {e}")
-    for (
-        simulated
-    ) in mail.pop_simulated():  # Dev: nothing is sent, the mail is shown here
+    if simulated:  # nothing is sent, the mail is shown here
         print(
             "Simulation, nothing sent. To: "
             f"{simulated['recipient']}\nSubject: {simulated['subject']}\n"

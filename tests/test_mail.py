@@ -77,6 +77,17 @@ class MailTest(DbTestCase):
             with self.assertRaises(mail.MailError):
                 mail.send(self.cfg, STUDENT, "B", "T")
 
+    def test_simulate_in_production_returns_the_mail_and_keeps_no_queue(
+        self,
+    ):
+        self.cfg["mail"]["simulate_insecure"] = True
+        with mock.patch.dict(os.environ, {"EMPTYDIFF_DEV": ""}):
+            simulated = mail.send(self.cfg, STUDENT, "B", "T")
+        self.assertEqual(
+            simulated, {"recipient": STUDENT, "subject": "B", "body": "T"}
+        )
+        self.assertEqual(mail.pop_simulated(), [])
+
     def smtp_cfg(self, **kw):
         values = dict(
             backend="smtp",

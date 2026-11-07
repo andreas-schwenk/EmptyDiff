@@ -96,6 +96,7 @@ TOKEN_RE = re.compile(r"^[0-9a-f]{32}$")
 def create_app(cfg=None):
     cfg = cfg or config_module.load()
     dev = config_module.is_dev()
+    simulating = mail.simulates(cfg)
     os.makedirs(cfg["data_dir"], exist_ok=True)
     tmp_dir = os.path.join(cfg["data_dir"], "tmp")
     staging_dir = os.path.join(cfg["data_dir"], "import-staging")
@@ -324,7 +325,8 @@ def create_app(cfg=None):
             "languages": [
                 (code, i18n.language_name(code)) for code in i18n.languages()
             ],
-            "sim_mails": mail.pop_simulated() if dev else [],
+            "sim_mails": session.pop("sim_mails", []) if simulating else [],
+            "sim_insecure": simulating and not dev,
             "imprint_url": cfg["privacy"]["imprint_url"].strip(),
             "max_attempts": cfg["limits"]["max_attempts"],
             "icon_version": icon_version,
@@ -392,7 +394,11 @@ def create_app(cfg=None):
                     per_ip=limits["max_codes_per_ip_hour"],
                     cooldown_seconds=limits["code_cooldown_seconds"],
                 )
-                mail.send(cfg, email, *mail.login_code_mail(code, ttl, g.lang))
+                simulated = mail.send(
+                    cfg, email, *mail.login_code_mail(code, ttl, g.lang)
+                )
+                if simulated:  # shown to this browser only, on the next page
+                    session["sim_mails"] = [simulated]
             except auth.AuthError as e:
                 flash(msg(e), "error")
                 return redirect(url_for("login"))
